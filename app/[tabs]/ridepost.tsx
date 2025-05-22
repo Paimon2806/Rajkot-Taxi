@@ -43,8 +43,11 @@ export default function RidePost() {
             await addDoc(collection(db, "rides"), {
                 ...rideData,
                 uid: user.uid,
-                username, // Use fetched username
+                username,
                 timestamp: serverTimestamp(),
+                assignedTo: null,
+                assignedName: null,
+                status: "pending", // could be 'pending', 'accepted', 'in_progress', 'completed', 'cancelled'
             });
 
             Alert.alert("Success", "Ride posted successfully!");
