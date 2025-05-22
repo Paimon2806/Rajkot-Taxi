@@ -44,9 +44,7 @@ export default function RideList() {
             orderBy("timestamp", "desc")
         );
 
-        const unsubscribe = onSnapshot(
-            q,
-            (querySnapshot) => {
+        return onSnapshot(q, (querySnapshot) => {
                 const ridesData: Ride[] = [];
                 querySnapshot.forEach((docSnap) => {
                     const data = docSnap.data();
@@ -71,8 +69,6 @@ export default function RideList() {
                 setLoading(false);
             }
         );
-
-        return unsubscribe;
     }, []);
 
     const handleAcceptRide = async (rideId: string) => {
