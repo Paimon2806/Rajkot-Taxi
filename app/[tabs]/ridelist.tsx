@@ -104,7 +104,6 @@ export default function RideList() {
             username={item.username}
             status={item.status}
             assignedTo={item.assignedTo}
-            currentUserId={user?.uid ?? ""}
             onAccept={handleAcceptRide}
         />
     );
