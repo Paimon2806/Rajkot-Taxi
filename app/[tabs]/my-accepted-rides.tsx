@@ -1,23 +1,27 @@
+// src/app/(tabs)/my-accepted-rides.tsx
+
 import React, { useEffect, useState } from "react";
 import {
     View,
     FlatList,
     StyleSheet,
     ActivityIndicator,
-    Alert,
     Text,
+    Alert, // Added for potential error messages
 } from "react-native";
 import {
     collection,
     query,
+    where, // <--- Import 'where' for filtering
     orderBy,
     onSnapshot,
 } from "firebase/firestore";
-import { db } from "../../config/firebaseConfig"; // Ensure this path is correct
+import { getAuth } from "firebase/auth"; // <--- Import getAuth to get current user UID
+import { db } from "../../config/firebaseConfig"; // Adjust path as needed
 import RideCard from "../../components/RideCard";
-import { acceptRide } from "../../services/RideActionsService"; // <--- IMPORT THE NEW SERVICE FUNCTION
+import { acceptRide } from "../../services/RideActionsService"; // Re-use the acceptRide function if needed here, or if this screen only displays accepted rides, you might not need it.
 
-// Define Ride interface
+// Define Ride interface (copy from RideList or put in a shared types file)
 interface Ride {
     id: string;
     pickup: string;
@@ -31,22 +35,31 @@ interface Ride {
     timestamp: any; // Firestore timestamp
 }
 
-export default function RideList() {
+export default function MyAcceptedRidesScreen() {
     const [rides, setRides] = useState<Ride[]>([]);
     const [loading, setLoading] = useState(true);
-
-    // No need for getAuth() and user here anymore, as acceptRide handles it
-    // const auth = getAuth();
-    // const user = auth.currentUser;
+    const auth = getAuth();
+    const currentUser = auth.currentUser; // Get the currently logged-in user
 
     useEffect(() => {
+        if (!currentUser) {
+            // If no user is logged in, we can't fetch assigned rides.
+            // This scenario should ideally be handled by your _layout.tsx redirect.
+            setLoading(false);
+            setRides([]);
+            return;
+        }
+
+        // <--- THE CRUCIAL CHANGE IS HERE: THE FIRESTORE QUERY ---
         const q = query(
             collection(db, "rides"),
+            where("assignedTo", "==", currentUser.uid), // Filter by current user's UID
+            where("status", "==", "accepted"), // Optionally filter only 'accepted' rides
             orderBy("timestamp", "desc")
         );
+        // <--- END OF FIRESTORE QUERY CHANGE ---
 
-        // onSnapshot gives real-time updates for the list
-        return onSnapshot(q, (querySnapshot) => {
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {
                 const ridesData: Ride[] = [];
                 querySnapshot.forEach((docSnap) => {
                     const data = docSnap.data();
@@ -67,26 +80,22 @@ export default function RideList() {
                 setLoading(false);
             },
             (error) => {
-                console.error("Error fetching rides: ", error);
+                console.error("Error fetching my accepted rides: ", error);
                 setLoading(false);
-                // Optionally show an alert for list fetching error
-                Alert.alert("Error", "Failed to load rides. Please check your connection.");
+                Alert.alert("Error", "Failed to load your accepted rides. Please try again.");
             }
         );
-    }, []);
 
-    // <--- handleAcceptRide NOW USES THE SEPARATE SERVICE FUNCTION ---
-    const handleAcceptRide = async (rideId: string) => {
-        try {
-            await acceptRide(rideId); // Call the separated service function
-            Alert.alert("Success", "Ride accepted!");
-        } catch (error: any) { // Type 'any' for error caught from async functions
-            console.error("Failed to accept ride:", error);
-            // Display the user-friendly message from the service, or a generic one
-            Alert.alert("Error", error.message || "Could not accept ride.");
-        }
+        return () => unsubscribe(); // Cleanup the listener on unmount
+    }, [currentUser]); // Re-run effect if currentUser changes (e.g., after login/logout)
+
+    // You likely won't need an 'onAccept' functionality on this screen
+    // because these are already accepted. However, if you add features
+    // like 'cancel ride' or 'complete ride', you'd create similar handlers.
+    const handleActionOnAcceptedRide = (rideId: string) => {
+        // Implement actions like 'cancel' or 'complete' if needed
+        Alert.alert("Ride Action", `You are trying to act on ride: ${rideId}`);
     };
-    // <--- END OF CHANGE ---
 
     const renderItem = ({ item }: { item: Ride }) => (
         <RideCard
@@ -99,10 +108,10 @@ export default function RideList() {
             username={item.username}
             status={item.status}
             assignedTo={item.assignedTo}
-            onAccept={handleAcceptRide} // Still passes the handler down
+            // You might remove onAccept or replace it with a 'onCancel' or 'onComplete' handler
+            onAccept={() => handleActionOnAcceptedRide(item.id)} // Placeholder action
         />
     );
-
 
     if (loading) {
         return (
@@ -112,7 +121,22 @@ export default function RideList() {
         );
     }
 
-    // @ts-ignore
+    if (!currentUser) {
+        return (
+            <View style={styles.container}>
+                <Text style={styles.messageText}>Please log in to view your accepted rides.</Text>
+            </View>
+        );
+    }
+
+    if (rides.length === 0) {
+        return (
+            <View style={styles.container}>
+                <Text style={styles.messageText}>You haven't accepted any rides yet.</Text>
+            </View>
+        );
+    }
+
     return (
         <View style={styles.container}>
             <FlatList
@@ -120,7 +144,6 @@ export default function RideList() {
                 keyExtractor={(item) => item.id}
                 renderItem={renderItem}
                 contentContainerStyle={styles.listContainer}
-                ListEmptyComponent={<Text style={styles.emptyListText}>No rides available yet.</Text>}
             />
         </View>
     );
@@ -139,11 +162,13 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
+        backgroundColor: '#f4f4f4',
     },
-    emptyListText: { // Added style for empty list message
+    messageText: {
         textAlign: 'center',
         marginTop: 50,
         fontSize: 16,
         color: '#777',
+        paddingHorizontal: 20,
     }
 });

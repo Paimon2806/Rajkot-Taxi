@@ -9,7 +9,7 @@ const firebaseConfig = {
   projectId: "taxi-2806",
   storageBucket: "taxi-2806.firebasestorage.app",
   messagingSenderId: "758899481689",
-  appId: "1:758899481689:web:48ee6c9102ebeb25d56548",
+  appId: "1:758899481689:web:48ee6c9102ebeb25d56548"
 };
 
 // Ensure Firebase is initialized only once
