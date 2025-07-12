@@ -15,7 +15,7 @@ import {
 import { sendPasswordReset } from "../../services/authService";
 import { useRouter } from "expo-router";
 
-// Firebase error type is less strictly defined in the Web SDK for client-side casting
+
 interface FirebaseError extends Error {
     code?: string;
 }
@@ -37,8 +37,7 @@ export default function ForgotPasswordScreen() {
                     friendlyMessage = 'Please enter a valid email address.';
                     break;
                 case 'auth/user-not-found':
-                    // For security, we don't want to reveal if an email exists or not
-                    // So we'll show a generic success message instead in the UI
+
                     setSuccess(true);
                     return;
                 case 'auth/too-many-requests':

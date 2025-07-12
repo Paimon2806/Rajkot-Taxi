@@ -13,11 +13,11 @@ import {
     orderBy,
     onSnapshot,
 } from "firebase/firestore";
-import { db } from "../../config/firebaseConfig"; // Ensure this path is correct
+import { db } from "../../config/firebaseConfig";
 import RideCard from "../../components/RideCard";
-import { acceptRideRequest } from "../../services/RideActionsService"; // <--- IMPORT THE NEW SERVICE FUNCTION
+import { acceptRideRequest } from "../../services/RideActionsService";
 
-// Define Ride interface
+
 interface Ride {
     id: string;
     pickup: string;
@@ -28,16 +28,14 @@ interface Ride {
     username: string;
     status: string;
     assignedTo: string | null;
-    timestamp: any; // Firestore timestamp
+    timestamp: any;
 }
 
 export default function RideList() {
     const [rides, setRides] = useState<Ride[]>([]);
     const [loading, setLoading] = useState(true);
 
-    // No need for getAuth() and user here anymore, as acceptRide handles it
-    // const auth = getAuth();
-    // const user = auth.currentUser;
+
 
     useEffect(() => {
         const q = query(
@@ -45,7 +43,7 @@ export default function RideList() {
             orderBy("timestamp", "desc")
         );
 
-        // onSnapshot gives real-time updates for the list
+
         return onSnapshot(q, (querySnapshot) => {
                 const ridesData: Ride[] = [];
                 querySnapshot.forEach((docSnap) => {
@@ -69,24 +67,24 @@ export default function RideList() {
             (error) => {
                 console.error("Error fetching rides: ", error);
                 setLoading(false);
-                // Optionally show an alert for list fetching error
+
                 Alert.alert("Error", "Failed to load rides. Please check your connection.");
             }
         );
     }, []);
 
-    // <--- handleAcceptRide NOW USES THE SEPARATE SERVICE FUNCTION ---
+
     const handleAcceptRide = async (rideId: string) => {
         try {
-            await acceptRideRequest(rideId); // Call the separated service function
+            await acceptRideRequest(rideId);
             Alert.alert("Success", "Ride accepted!");
-        } catch (error: any) { // Type 'any' for error caught from async functions
+        } catch (error: any) {
             console.error("Failed to accept ride:", error);
-            // Display the user-friendly message from the service, or a generic one
+
             Alert.alert("Error", error.message || "Could not accept ride.");
         }
     };
-    // <--- END OF CHANGE ---
+
 
     const renderItem = ({ item }: { item: Ride }) => (
         <RideCard
@@ -99,7 +97,7 @@ export default function RideList() {
             username={item.username}
             status={item.status}
             assignedTo={item.assignedTo}
-            onAccept={handleAcceptRide} // Still passes the handler down
+            onAccept={handleAcceptRide}
         />
     );
 
@@ -139,7 +137,7 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
     },
-    emptyListText: { // Added style for empty list message
+    emptyListText: {
         textAlign: 'center',
         marginTop: 50,
         fontSize: 16,

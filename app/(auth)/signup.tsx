@@ -1,4 +1,4 @@
-// src/app/signup.tsx (or your path to SignUpScreen.tsx)
+
 
 import React, { useState } from "react";
 import {
@@ -13,11 +13,11 @@ import {
     Platform,
     ScrollView,
 } from "react-native";
-// import { Picker } from '@react-native-picker/picker'; // <--- REMOVED THIS IMPORT
+// import { Picker } from '@react-native-picker/picker';
 import { signUp } from "../../services/authService";
 import { useRouter } from "expo-router";
 
-// Firebase error type is less strictly defined in the Web SDK for client-side casting
+
 interface FirebaseError extends Error {
     code?: string;
 }
@@ -27,7 +27,7 @@ export default function SignUpScreen() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [name, setName] = useState("");
-    const [role, setRole] = useState<string>(""); // Initial state is empty string for no selection
+    const [role, setRole] = useState<string>("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -81,7 +81,7 @@ export default function SignUpScreen() {
             setError("Password must be at least 6 characters long.");
             return false;
         }
-        if (!role) { // This still works for "" as "" is falsy
+        if (!role) {
             setError("Please select your role (Driver or Passenger).");
             return false;
         }
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '500',
     },
-    // <--- NEW STYLES FOR RADIO BUTTONS ---/>
+
     roleSelectionContainer: {
         flexDirection: 'row',
         justifyContent: 'space-around',
@@ -329,21 +329,21 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         borderWidth: 1,
         borderColor: '#DDE2E8',
-        overflow: 'hidden', // Ensures inner borders/backgrounds clip correctly
+        overflow: 'hidden',
     },
     roleOption: {
         flex: 1,
         paddingVertical: 15,
         alignItems: 'center',
-        // Optional: add a subtle right border between options if desired
+
         // borderRightWidth: 1,
         // borderRightColor: '#DDE2E8',
     },
-    // Remove border from the last option if you add it above
+
     // 'roleOption:last-child': { borderRightWidth: 0 },
     roleOptionSelected: {
-        backgroundColor: '#3498DB', // Highlight color
-        borderColor: '#3498DB', // Ensure border matches
+        backgroundColor: '#3498DB',
+        borderColor: '#3498DB',
     },
     roleOptionText: {
         fontSize: 16,
@@ -351,17 +351,17 @@ const styles = StyleSheet.create({
         color: '#2C3E50',
     },
     roleOptionTextSelected: {
-        color: '#FFFFFF', // Text color when selected
+        color: '#FFFFFF',
     },
     roleOptionDisabled: {
-        opacity: 0.6, // Dim when disabled
+        opacity: 0.6,
     },
     roleOptionTextDisabled: {
-        color: '#888', // Dim text when disabled
+        color: '#888',
     },
-    // <--- END NEW STYLES ---/>
 
-    // REMOVED PICKER STYLES:
+
+
     // pickerContainer: {
     //     borderWidth: 1,
     //     borderColor: '#DDE2E8',

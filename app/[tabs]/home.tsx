@@ -19,47 +19,47 @@ import {
   onSnapshot,
   doc,
   getDoc,
-  Timestamp, // Import Timestamp for type safety
-  limit // Import limit for fetching next 1-2 rides
+  Timestamp,
+  limit
 } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { db } from "../../config/firebaseConfig"; // Ensure this path is correct
-import { logout } from "../../services/authService"; // Assuming this exists
-import { useAuth } from "../../context/AuthContext"; // Import the custom hook
-// Define the Ride interface to match Firestore document structure
+import { db } from "../../config/firebaseConfig";
+import { logout } from "../../services/authService";
+import { useAuth } from "../../context/AuthContext";
+
 interface Ride {
   id: string;
   pickup: string;
   drop: string;
-  date: string; // Date string (e.g., "YYYY-MM-DD")
-  time: string; // Time string (e.g., "HH:MM AM/PM")
-  price: number; // Assuming price is stored as a number
-  uid: string; // The UID of the user (driver) who posted the ride
-  username: string; // The name of the user (driver) who posted the ride
+  date: string;
+  time: string;
+  price: number;
+  uid: string;
+  username: string;
   status: 'pending' | 'accepted' | 'in_progress' | 'completed' | 'cancelled';
-  assignedTo?: string; // Optional: UID of the passenger assigned to the ride
-  timestamp: Timestamp; // Firestore Timestamp object for ordering
+  assignedTo?: string;
+  timestamp: Timestamp;
 }
 
 export default function HomeScreen() {
   const router = useRouter();
 
-  // Access user context values and functions
+
   const { user, userName, userRole, isLoading } = useAuth();
 
-  // Passenger specific states for "Find Your Next Ride" section
+
   const [pickupLocation, setPickupLocation] = useState("");
   const [dropoffLocation, setDropoffLocation] = useState("");
   const [upcomingRides, setUpcomingRides] = useState<Ride[]>([]);
 
-  // Driver specific states for "Pending Ride Requests" section
+
   const [pendingRequests, setPendingRequests] = useState<Ride[]>([]);
 
-  // Effect to fetch role-specific ride summaries
+
   useEffect(() => {
-    // Only fetch rides if userRole is available
+
     if (!userRole || !user?.uid) {
-      setUpcomingRides([]); // Clear existing data
+      setUpcomingRides([]);
       setPendingRequests([]);
       return;
     }

@@ -1,4 +1,4 @@
-// src/app/(tabs)/my-accepted-rides.tsx
+
 
 import React, { useEffect, useState } from "react";
 import {

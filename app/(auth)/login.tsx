@@ -1,4 +1,4 @@
-// src/app/login.tsx (or your path to LoginScreen.tsx)
+
 
 import React, { useState } from "react";
 import {
@@ -13,10 +13,10 @@ import {
     Platform,
     ScrollView,
 } from "react-native";
-import { signIn, sendPasswordReset } from "../../services/authService"; // Updated import
+import { signIn, sendPasswordReset } from "../../services/authService";
 import { useRouter } from "expo-router";
 
-// Firebase error type is less strictly defined in the Web SDK for client-side casting
+
 interface FirebaseError extends Error {
     code?: string;
 }
@@ -32,16 +32,16 @@ export default function LoginScreen() {
         setLoading(false);
         let friendlyMessage = "An unexpected error occurred. Please try again.";
 
-        if (authError.code) { // Firebase errors have a 'code' property
+        if (authError.code) {
             switch (authError.code) {
                 case 'auth/invalid-email':
-                case 'auth/invalid-credential': // Generic for wrong email/password or user not found
+                case 'auth/invalid-credential':
                     friendlyMessage = 'Invalid email or password. Please check your credentials.';
                     break;
-                case 'auth/user-not-found': // Often covered by auth/invalid-credential in v9+
+                case 'auth/user-not-found':
                     friendlyMessage = 'No user found with this email. Please sign up or check your email.';
                     break;
-                case 'auth/wrong-password': // Often covered by auth/invalid-credential in v9+
+                case 'auth/wrong-password':
                     friendlyMessage = 'Incorrect password. Please try again.';
                     break;
                 case 'auth/too-many-requests':
@@ -54,7 +54,7 @@ export default function LoginScreen() {
                     friendlyMessage = authError.message || friendlyMessage;
             }
         } else if (authError instanceof Error) {
-            friendlyMessage = authError.message; // For generic errors
+            friendlyMessage = authError.message;
         }
         setError(friendlyMessage);
         console.error('Auth Error:', authError);
@@ -85,8 +85,8 @@ export default function LoginScreen() {
         setError(null);
         try {
             await signIn(email.trim(), password);
-            // Alert.alert("Success", "Logged in successfully!"); // Navigation handled by onAuthStateChanged is preferred
-            router.replace("/(tabs)/home"); // Or let onAuthStateChanged handle this
+            // Alert.alert("Success", "Logged in successfully!");
+            router.replace("/(tabs)/home");
         } catch (err) {
             handleAuthError(err as FirebaseError);
         } finally {
@@ -94,7 +94,7 @@ export default function LoginScreen() {
         }
     };
 
-    // Navigate to dedicated forgot password screen instead of handling it here
+
     const handlePasswordReset = () => {
         router.push("/(auth)/forgotpassword");
     };
@@ -164,7 +164,7 @@ export default function LoginScreen() {
 
                     <TouchableOpacity
                         style={styles.secondaryButton}
-                        onPress={() => router.push("/signup")} // Navigates to your existing signup screen
+                        onPress={() => router.push("/signup")}
                         disabled={loading}
                     >
                         <Text style={styles.secondaryButtonText}>Don't have an account? Sign Up</Text>
