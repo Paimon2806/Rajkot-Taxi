@@ -51,7 +51,7 @@ export default function RidePost() {
             });
 
             Alert.alert("Success", "Ride posted successfully!");
-            router.push("/[tabs]/home");
+            router.push("/tabs/home");
         } catch (error) {
             Alert.alert("Error", "Failed to post ride.");
             console.error(error);

@@ -13,7 +13,7 @@ import {
     Platform,
     ScrollView,
 } from "react-native";
-import { signIn, sendPasswordReset } from "../services/authService"; // Updated import
+import { signIn, sendPasswordReset } from "../../services/authService"; // Updated import
 import { useRouter } from "expo-router";
 
 // Firebase error type is less strictly defined in the Web SDK for client-side casting
@@ -94,19 +94,9 @@ export default function LoginScreen() {
         }
     };
 
-    const handlePasswordReset = async () => {
-        if (!validateInputs(true)) return; // Validate only email for password reset
-
-        setLoading(true);
-        setError(null);
-        try {
-            await sendPasswordReset(email.trim());
-            Alert.alert('Password Reset', 'If an account exists for this email, a password reset link has been sent.');
-        } catch (err) {
-            handleAuthError(err as FirebaseError);
-        } finally {
-            setLoading(false);
-        }
+    // Navigate to dedicated forgot password screen instead of handling it here
+    const handlePasswordReset = () => {
+        router.push("/(auth)/forgotpassword");
     };
 
     return (
@@ -161,9 +151,9 @@ export default function LoginScreen() {
                     <TouchableOpacity
                         style={styles.linkButton}
                         onPress={handlePasswordReset}
-                        disabled={loading || !email.trim()}
+                        disabled={loading}
                     >
-                        <Text style={[styles.linkButtonText, (!email.trim() && !loading) && styles.disabledText]}>Forgot Password?</Text>
+                        <Text style={styles.linkButtonText}>Forgot Password?</Text>
                     </TouchableOpacity>
 
                     <View style={styles.separatorContainer}>

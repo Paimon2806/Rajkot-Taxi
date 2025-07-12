@@ -15,7 +15,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../../config/firebaseConfig"; // Ensure this path is correct
 import RideCard from "../../components/RideCard";
-import { acceptRide } from "../../services/RideActionsService"; // <--- IMPORT THE NEW SERVICE FUNCTION
+import { acceptRideRequest } from "../../services/RideActionsService"; // <--- IMPORT THE NEW SERVICE FUNCTION
 
 // Define Ride interface
 interface Ride {
@@ -78,7 +78,7 @@ export default function RideList() {
     // <--- handleAcceptRide NOW USES THE SEPARATE SERVICE FUNCTION ---
     const handleAcceptRide = async (rideId: string) => {
         try {
-            await acceptRide(rideId); // Call the separated service function
+            await acceptRideRequest(rideId); // Call the separated service function
             Alert.alert("Success", "Ride accepted!");
         } catch (error: any) { // Type 'any' for error caught from async functions
             console.error("Failed to accept ride:", error);
@@ -112,7 +112,6 @@ export default function RideList() {
         );
     }
 
-    // @ts-ignore
     return (
         <View style={styles.container}>
             <FlatList

@@ -13,8 +13,8 @@ import {
     Platform,
     ScrollView,
 } from "react-native";
-import { Picker } from '@react-native-picker/picker'; // <--- ADD THIS IMPORT
-import { signUp } from "../services/authService";
+// import { Picker } from '@react-native-picker/picker'; // <--- REMOVED THIS IMPORT
+import { signUp } from "../../services/authService";
 import { useRouter } from "expo-router";
 
 // Firebase error type is less strictly defined in the Web SDK for client-side casting
@@ -27,7 +27,7 @@ export default function SignUpScreen() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [name, setName] = useState("");
-    const [role, setRole] = useState<string | null>(null); // <--- Changed initial state to null, added type
+    const [role, setRole] = useState<string>(""); // Initial state is empty string for no selection
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -81,11 +81,10 @@ export default function SignUpScreen() {
             setError("Password must be at least 6 characters long.");
             return false;
         }
-        if (!role) { // <--- Changed validation for Picker
+        if (!role) { // This still works for "" as "" is falsy
             setError("Please select your role (Driver or Passenger).");
             return false;
         }
-        // No need to validate specific values like 'driver' or 'passenger' because Picker ensures it
 
         setError(null);
         return true;
@@ -97,8 +96,7 @@ export default function SignUpScreen() {
         setLoading(true);
         setError(null);
         try {
-            // No need to .toLowerCase() role as Picker value will be 'driver' or 'passenger'
-            await signUp(email.trim(), password, name.trim(), role!); // <--- Added non-null assertion for TypeScript
+            await signUp(email.trim(), password, name.trim(), role);
             Alert.alert("Success", "Account created successfully! Please log in.");
             router.replace("/login");
         } catch (err) {
@@ -157,20 +155,41 @@ export default function SignUpScreen() {
                     />
 
                     <Text style={styles.label}>Role</Text>
-                    {/* <--- START OF PICKER/DROPDOWN IMPLEMENTATION ---/> */}
-                    <View style={styles.pickerContainer}>
-                        <Picker
-                            selectedValue={role}
-                            onValueChange={(itemValue) => setRole(itemValue)}
-                            style={styles.picker}
-                            enabled={!loading}
+                    {/* <--- START OF RADIO BUTTON IMPLEMENTATION ---/> */}
+                    <View style={styles.roleSelectionContainer}>
+                        <TouchableOpacity
+                            style={[
+                                styles.roleOption,
+                                role === "driver" && styles.roleOptionSelected,
+                                loading && styles.roleOptionDisabled
+                            ]}
+                            onPress={() => setRole("driver")}
+                            disabled={loading}
                         >
-                            <Picker.Item label="Select Role" value={null} /> {/* Default disabled option */}
-                            <Picker.Item label="Driver" value="driver" />
-                            <Picker.Item label="Passenger" value="passenger" />
-                        </Picker>
+                            <Text style={[
+                                styles.roleOptionText,
+                                role === "driver" && styles.roleOptionTextSelected,
+                                loading && styles.roleOptionTextDisabled
+                            ]}>Driver</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={[
+                                styles.roleOption,
+                                role === "passenger" && styles.roleOptionSelected,
+                                loading && styles.roleOptionDisabled
+                            ]}
+                            onPress={() => setRole("passenger")}
+                            disabled={loading}
+                        >
+                            <Text style={[
+                                styles.roleOptionText,
+                                role === "passenger" && styles.roleOptionTextSelected,
+                                loading && styles.roleOptionTextDisabled
+                            ]}>Passenger</Text>
+                        </TouchableOpacity>
                     </View>
-                    {/* <--- END OF PICKER/DROPDOWN IMPLEMENTATION ---/> */}
+                    {/* <--- END OF RADIO BUTTON IMPLEMENTATION ---/> */}
 
                     {loading ? (
                         <ActivityIndicator size="large" color={styles.button.backgroundColor} style={styles.button} />
@@ -301,21 +320,61 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '500',
     },
-    // <--- ADD THESE NEW STYLES FOR PICKER ---/>
-    pickerContainer: {
+    // <--- NEW STYLES FOR RADIO BUTTONS ---/>
+    roleSelectionContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        marginBottom: 18,
+        backgroundColor: '#F0F3F7',
+        borderRadius: 8,
         borderWidth: 1,
         borderColor: '#DDE2E8',
-        borderRadius: 8,
-        marginBottom: 18,
-        overflow: 'hidden', // Ensures picker stays within bounds
-        backgroundColor: '#F0F3F7',
-        height: 50, // Match input height for consistency
-        justifyContent: 'center', // Center content vertically
+        overflow: 'hidden', // Ensures inner borders/backgrounds clip correctly
     },
-    picker: {
-        height: 50, // Ensures picker takes full height of its container
-        width: '100%',
-        color: '#2C3E50', // Text color inside picker
+    roleOption: {
+        flex: 1,
+        paddingVertical: 15,
+        alignItems: 'center',
+        // Optional: add a subtle right border between options if desired
+        // borderRightWidth: 1,
+        // borderRightColor: '#DDE2E8',
     },
-    // <--- END OF NEW STYLES ---/>
+    // Remove border from the last option if you add it above
+    // 'roleOption:last-child': { borderRightWidth: 0 },
+    roleOptionSelected: {
+        backgroundColor: '#3498DB', // Highlight color
+        borderColor: '#3498DB', // Ensure border matches
+    },
+    roleOptionText: {
+        fontSize: 16,
+        fontWeight: '500',
+        color: '#2C3E50',
+    },
+    roleOptionTextSelected: {
+        color: '#FFFFFF', // Text color when selected
+    },
+    roleOptionDisabled: {
+        opacity: 0.6, // Dim when disabled
+    },
+    roleOptionTextDisabled: {
+        color: '#888', // Dim text when disabled
+    },
+    // <--- END NEW STYLES ---/>
+
+    // REMOVED PICKER STYLES:
+    // pickerContainer: {
+    //     borderWidth: 1,
+    //     borderColor: '#DDE2E8',
+    //     borderRadius: 8,
+    //     marginBottom: 18,
+    //     overflow: 'hidden',
+    //     backgroundColor: '#F0F3F7',
+    //     height: 50,
+    //     justifyContent: 'center',
+    // },
+    // picker: {
+    //     height: 50,
+    //     width: '100%',
+    //     color: '#2C3E50',
+    // },
 });

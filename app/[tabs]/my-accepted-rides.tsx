@@ -7,21 +7,19 @@ import {
     StyleSheet,
     ActivityIndicator,
     Text,
-    Alert, // Added for potential error messages
+    Alert,
 } from "react-native";
 import {
     collection,
     query,
-    where, // <--- Import 'where' for filtering
+    where,
     orderBy,
     onSnapshot,
 } from "firebase/firestore";
-import { getAuth } from "firebase/auth"; // <--- Import getAuth to get current user UID
-import { db } from "../../config/firebaseConfig"; // Adjust path as needed
+import { getAuth } from "firebase/auth";
+import { db } from "../../config/firebaseConfig";
 import RideCard from "../../components/RideCard";
-import { acceptRide } from "../../services/RideActionsService"; // Re-use the acceptRide function if needed here, or if this screen only displays accepted rides, you might not need it.
 
-// Define Ride interface (copy from RideList or put in a shared types file)
 interface Ride {
     id: string;
     pickup: string;
@@ -32,32 +30,28 @@ interface Ride {
     username: string;
     status: string;
     assignedTo: string | null;
-    timestamp: any; // Firestore timestamp
+    timestamp: any;
 }
 
 export default function MyAcceptedRidesScreen() {
     const [rides, setRides] = useState<Ride[]>([]);
     const [loading, setLoading] = useState(true);
     const auth = getAuth();
-    const currentUser = auth.currentUser; // Get the currently logged-in user
+    const currentUser = auth.currentUser;
 
     useEffect(() => {
         if (!currentUser) {
-            // If no user is logged in, we can't fetch assigned rides.
-            // This scenario should ideally be handled by your _layout.tsx redirect.
             setLoading(false);
             setRides([]);
             return;
         }
 
-        // <--- THE CRUCIAL CHANGE IS HERE: THE FIRESTORE QUERY ---
         const q = query(
             collection(db, "rides"),
-            where("assignedTo", "==", currentUser.uid), // Filter by current user's UID
-            where("status", "==", "accepted"), // Optionally filter only 'accepted' rides
+            where("assignedTo", "==", currentUser.uid),
+            where("status", "==", "accepted"),
             orderBy("timestamp", "desc")
         );
-        // <--- END OF FIRESTORE QUERY CHANGE ---
 
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
                 const ridesData: Ride[] = [];
@@ -86,14 +80,10 @@ export default function MyAcceptedRidesScreen() {
             }
         );
 
-        return () => unsubscribe(); // Cleanup the listener on unmount
-    }, [currentUser]); // Re-run effect if currentUser changes (e.g., after login/logout)
+        return () => unsubscribe();
+    }, [currentUser]);
 
-    // You likely won't need an 'onAccept' functionality on this screen
-    // because these are already accepted. However, if you add features
-    // like 'cancel ride' or 'complete ride', you'd create similar handlers.
     const handleActionOnAcceptedRide = (rideId: string) => {
-        // Implement actions like 'cancel' or 'complete' if needed
         Alert.alert("Ride Action", `You are trying to act on ride: ${rideId}`);
     };
 
@@ -108,8 +98,7 @@ export default function MyAcceptedRidesScreen() {
             username={item.username}
             status={item.status}
             assignedTo={item.assignedTo}
-            // You might remove onAccept or replace it with a 'onCancel' or 'onComplete' handler
-            onAccept={() => handleActionOnAcceptedRide(item.id)} // Placeholder action
+            onAccept={() => handleActionOnAcceptedRide(item.id)}
         />
     );
 
@@ -132,7 +121,9 @@ export default function MyAcceptedRidesScreen() {
     if (rides.length === 0) {
         return (
             <View style={styles.container}>
-                <Text style={styles.messageText}>You haven't accepted any rides yet.</Text>
+                <Text style={styles.messageText}>
+                    Looks like you haven't accepted any rides yet.
+                </Text>
             </View>
         );
     }
