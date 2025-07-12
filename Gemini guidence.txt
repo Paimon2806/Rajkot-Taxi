@@ -1,0 +1,42 @@
+Given your existing setup and the need to accommodate more content, my top recommendation for your app's navigation strategy is:
+
+**1. Primary Navigation (Bottom Tabs - 3-4 items max):**
+
+* **Home (Dashboard):** This is your anchor. It should be a personalized hub with:
+    * **Quick "Find a Ride" (Passenger) / "Go Online" (Driver) buttons.**
+    * **Relevant summary data:** "Your next ride," "New ride requests near you," "Recent activity."
+    * **Quick links to key features:** "Post a Ride," "My Rides."
+* **Rides:** This would be a single tab for all things "ride listing/Browse."
+    * It will primarily show **available rides (`RideList.tsx`)** that drivers can accept.
+* **My Journeys:** This new tab would consolidate all rides *relevant to the current user*, whether they are a passenger or a driver.
+    * It would contain the **"My Accepted Rides" component** you just created.
+    * **Crucially, this tab could have internal sub-navigation** (e.g., using a segmented control or nested tabs) for:
+        * "Upcoming Rides" (accepted but not yet started)
+        * "Past Rides" (completed by user)
+        * "My Posted Rides" (if the user is also a passenger who posts rides)
+* **Profile/Account:** For personal settings, payment methods, help, etc.
+
+**2. Secondary Navigation (Stack Navigator - Everywhere else):**
+
+* **From Home/Rides:** Tapping a `RideCard` (available or accepted) leads to a `RideDetailsScreen` via a stack. This screen would then have actions like "Accept," "Cancel," "Contact Passenger/Driver," "Start Ride," "Complete Ride," etc.
+* **From "Post a Ride" button (on Home or in a dedicated "Post Ride" flow if not a tab):** Leads to your `ridepost` form and subsequent screens.
+* **From Profile:** Leads to "Edit Profile," "Settings," "Payment Info," "Help & Support" screens.
+
+**3. Tertiary Navigation (Drawer Navigator - Optional, but useful):**
+
+* For global features that aren't critical to daily usage but still need to be accessible:
+    * "About Us"
+    * "Privacy Policy"
+    * "Rate Us"
+    * "Invite Friends"
+    * A more comprehensive "Settings" if your profile tab is simple.
+
+**Why this is the best for you:**
+
+* **Clean Tabs:** Keeps your bottom bar focused on 3-4 primary user intentions (finding rides, managing their own trips, managing their profile).
+* **Logical Grouping:** `My Journeys` is a smart way to collect all user-specific ride history in one place, reducing tab clutter.
+* **Scalability:** The Stack Navigator allows unlimited depth for details and forms, which is where most of your content will live.
+* **Clear User Flow:** Users intuitively understand that tapping a list item takes them to a detail screen, and the back button gets them out.
+* **Future-Proof:** Easily allows you to add more features (e.g., driver earnings, passenger preferences, different ride types) by extending screens within the stack or adding new segments within a `My Journeys` tab.
+
+This structure balances easy access to core features with the ability to house extensive content without overwhelming the user.
