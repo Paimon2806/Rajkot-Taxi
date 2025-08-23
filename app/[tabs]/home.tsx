@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from "react";
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ActivityIndicator,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
+    View,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    ActivityIndicator,
+    StyleSheet,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    Switch,
 } from "react-native";
 import { useRouter } from "expo-router";
 import {
@@ -17,15 +18,14 @@ import {
   where,
   orderBy,
   onSnapshot,
-  doc,
-  getDoc,
   Timestamp,
   limit
 } from "firebase/firestore";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+// import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { db } from "../../config/firebaseConfig";
 import { logout } from "../../services/authService";
 import { useAuth } from "../../context/AuthContext";
+import {LocationService} from "../../services/LocationService";
 
 interface Ride {
   id: string;
@@ -54,6 +54,22 @@ export default function HomeScreen() {
 
 
   const [pendingRequests, setPendingRequests] = useState<Ride[]>([]);
+
+    const [isOnline, setIsOnline] = useState(false);
+
+    // This function is called when the driver flips the switch
+    const toggleOnlineStatus = (value: boolean) => {
+        setIsOnline(value);
+        if (value) {
+            // If the switch is turned ON
+            console.log("Driver is going online...");
+            LocationService.startLocationTracking();
+        } else {
+            // If the switch is turned OFF
+            console.log("Driver is going offline...");
+            LocationService.stopLocationTracking();
+        }
+    };
 
 
   useEffect(() => {
@@ -251,6 +267,25 @@ export default function HomeScreen() {
                     <Text style={styles.secondaryButtonText}>View All My Posted Rides</Text>
                   </TouchableOpacity>
                 </View>
+                  <View style={styles.container}>
+                      <Text style={styles.title}>Driver Dashboard</Text>
+
+                      <View style={styles.switchContainer}>
+                          <Text style={styles.label}>{isOnline ? 'You are Online' : 'You are Offline'}</Text>
+                          <Switch
+                              trackColor={{ false: "#767577", true: "#81b0ff" }}
+                              thumbColor={isOnline ? "#f5dd4b" : "#f4f3f4"}
+                              onValueChange={toggleOnlineStatus}
+                              value={isOnline}
+                          />
+                      </View>
+
+                      <Text style={styles.info}>
+                          Toggle the switch to start or stop sharing your location with customers.
+                      </Text>
+
+                      {/* You can add other profile options here, like "Edit Profile", "Logout", etc. */}
+                  </View>
               </>
           )}
 
@@ -390,4 +425,37 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
+
+    title: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginBottom: 40,
+    },
+    switchContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 20,
+        padding: 20,
+        backgroundColor: 'white',
+        borderRadius: 15,
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.23,
+        shadowRadius: 2.62,
+        elevation: 4,
+    },
+    label: {
+        fontSize: 18,
+        marginRight: 10,
+    },
+    info: {
+        marginTop: 20,
+        fontSize: 14,
+        textAlign: 'center',
+        color: '#666',
+        paddingHorizontal: 20,
+    },
 });

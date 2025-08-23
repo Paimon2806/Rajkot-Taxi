@@ -1,33 +1,27 @@
-// The path to this file is: app/(tabs)/profile.tsx
-
+// In a screen file like app/(tabs)/profile.tsx (for the driver)
 import React, { useState } from 'react';
-import { View, Text, Switch, StyleSheet } from 'react-native';
-// Make sure the path to your LocationService is correct
-import { LocationService } from '../services/LocationService';
+import { View, Text, Switch, StyleSheet, Button } from 'react-native';
+import { LocationService } from '../services/LocationService'; // Adjust path if needed
 
-export default function ProfileScreen() {
-    // We'll manage the online/offline state here
+export default function DriverDashboard() {
     const [isOnline, setIsOnline] = useState(false);
 
-    // This function is called when the driver flips the switch
     const toggleOnlineStatus = (value: boolean) => {
         setIsOnline(value);
         if (value) {
-            // If the switch is turned ON
-            console.log("Driver is going online...");
+            // User wants to go online
+            console.log("Going online...");
             LocationService.startLocationTracking();
         } else {
-            // If the switch is turned OFF
-            console.log("Driver is going offline...");
+            // User wants to go offline
+            console.log("Going offline...");
             LocationService.stopLocationTracking();
         }
     };
 
-    // This is the UI for the driver's dashboard
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Driver Dashboard</Text>
-
             <View style={styles.switchContainer}>
                 <Text style={styles.label}>{isOnline ? 'You are Online' : 'You are Offline'}</Text>
                 <Switch
@@ -37,17 +31,13 @@ export default function ProfileScreen() {
                     value={isOnline}
                 />
             </View>
-
             <Text style={styles.info}>
                 Toggle the switch to start or stop sharing your location with customers.
             </Text>
-
-            {/* You can add other profile options here, like "Edit Profile", "Logout", etc. */}
         </View>
     );
 }
 
-// Styles for the component
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -65,27 +55,14 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         marginBottom: 20,
-        padding: 20,
-        backgroundColor: 'white',
-        borderRadius: 15,
-        shadowColor: "#000",
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.23,
-        shadowRadius: 2.62,
-        elevation: 4,
     },
     label: {
         fontSize: 18,
         marginRight: 10,
     },
     info: {
-        marginTop: 20,
         fontSize: 14,
         textAlign: 'center',
         color: '#666',
-        paddingHorizontal: 20,
     },
 });

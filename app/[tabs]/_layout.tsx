@@ -32,6 +32,13 @@ export default function TabLayout() {
                     tabBarIcon: ({ color, size }) => <Ionicons name="checkmark-circle" size={size} color={color} />,
                 }}
             />
+            <Tabs.Screen
+                name="myrides"
+                options={{
+                    title: "My posted rides",
+                    tabBarIcon: ({ color, size }) => <Ionicons name="checkmark-circle" size={size} color={color} />,
+                }}
+            />
         </Tabs>
     );
 }

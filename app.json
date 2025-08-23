@@ -8,11 +8,30 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "We need your location to show you on the map.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "We need your location to track your position for customers even when the app is in the background.",
+        "NSLocationAlwaysUsageDescription": "We need your location to track your position for customers even when the app is in the background."
+      },
+      "config": {
+        "googleMapsApiKey": "YOUR_IOS_API_KEY_HERE"
+      }
     },
     "android": {
       "package": "com.rajkot.taxi",
-      "versionCode": 1
+      "versionCode": 1,
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.ACCESS_BACKGROUND_LOCATION"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyALGbJOCJfXraw2LKWVr1Ydcdz7holehSg"
+        }
+      }
     },
     "web": {
       "bundler": "metro",
@@ -20,7 +39,13 @@
     },
     "plugins": [
       "expo-router",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow $(name) to use your location."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

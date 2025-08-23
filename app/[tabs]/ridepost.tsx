@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react"; // --- NEW: Import useState
 import {
     Text,
     StyleSheet,
@@ -16,6 +16,8 @@ import { getAuth } from "firebase/auth";
 
 export default function RidePost() {
     const router = useRouter();
+    // --- NEW: State to handle loading while the form is submitting ---
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handlePostRide = async (rideData: {
         pickup: string;
@@ -24,6 +26,14 @@ export default function RidePost() {
         time: string;
         price: string;
     }) => {
+        // --- NEW: Basic validation ---
+        if (!rideData.pickup || !rideData.drop || !rideData.price) {
+            Alert.alert("Missing Information", "Please fill out the pickup, drop, and price fields.");
+            return;
+        }
+
+        setIsSubmitting(true); // --- NEW: Start loading ---
+
         try {
             const auth = getAuth();
             const user = auth.currentUser;
@@ -33,7 +43,6 @@ export default function RidePost() {
                 return;
             }
 
-            // Retrieve the user's document from the "users" collection
             const userDocRef = doc(db, "users", user.uid);
             const userDocSnap = await getDoc(userDocRef);
             const username = userDocSnap.exists() && userDocSnap.data().name
@@ -47,14 +56,21 @@ export default function RidePost() {
                 timestamp: serverTimestamp(),
                 assignedTo: null,
                 assignedName: null,
-                status: "pending", // could be 'pending', 'accepted', 'in_progress', 'completed', 'cancelled'
+                status: "pending",
             });
 
             Alert.alert("Success", "Ride posted successfully!");
-            router.push("/tabs/home");
+
+            // --- NEW: Better navigation ---
+            // Instead of the home screen, go to the "My Rides" tab.
+            router.push("/(tabs)/myrides");
+
         } catch (error) {
             Alert.alert("Error", "Failed to post ride.");
             console.error(error);
+        } finally {
+            // --- NEW: Stop loading, whether it succeeded or failed ---
+            setIsSubmitting(false);
         }
     };
 
@@ -66,7 +82,9 @@ export default function RidePost() {
             >
                 <View style={styles.container}>
                     <Text style={styles.title}>Post a Ride</Text>
-                    <RideForm onSubmit={handlePostRide} />
+                    {/* --- NEW: Pass the submitting state to the form --- */}
+                    {/* This allows you to disable the button in RideForm if you want */}
+                    <RideForm onSubmit={handlePostRide} isSubmitting={isSubmitting} />
                 </View>
             </KeyboardAvoidingView>
         </SafeAreaView>
