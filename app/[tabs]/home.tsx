@@ -11,6 +11,7 @@ import {
     ScrollView,
     Switch,
 } from "react-native";
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from "expo-router";
 import {
   collection,
@@ -56,6 +57,11 @@ export default function HomeScreen() {
   const [pendingRequests, setPendingRequests] = useState<Ride[]>([]);
 
     const [isOnline, setIsOnline] = useState(false);
+
+    const navigateToProfile = () => {
+        // Use the router to navigate to the standalone profile screen
+        router.push('/profile');
+    };
 
     // This function is called when the driver flips the switch
     const toggleOnlineStatus = (value: boolean) => {
@@ -175,6 +181,13 @@ export default function HomeScreen() {
       >
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <Text style={styles.greeting}>Welcome, {userName}!</Text>
+
+            <View style={styles.header}>
+                <Text style={styles.headerTitle}>Home</Text>
+                <TouchableOpacity onPress={navigateToProfile} style={styles.profileButton}>
+                    <Ionicons name="person-circle-outline" size={32} color="#007AFF" />
+                </TouchableOpacity>
+            </View>
 
           {/* Passenger-specific UI sections */}
           {userRole === "passenger" && (
@@ -306,6 +319,24 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f8f8f8', // Light background for the screen
   },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        backgroundColor: '#FFF',
+        borderBottomWidth: 1,
+        borderBottomColor: '#E5E7EB',
+    },
+
+    headerTitle: {
+        fontSize: 22,
+        fontWeight: 'bold',
+    },
+    profileButton: {
+        padding: 4,
+    },
   scrollContent: {
     padding: 20,
     paddingBottom: 40, // Add more padding at the bottom for better scroll experience
