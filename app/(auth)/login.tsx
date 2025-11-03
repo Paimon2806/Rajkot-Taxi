@@ -134,23 +134,37 @@ export default function LoginScreen() {
                                 editable={!loading}
                             />
 
-                            <Button
-                                mode="contained"
-                                onPress={handleLogin}
-                                loading={loading}
-                                disabled={loading}
-                                style={styles.button}
+                            <MotiView
+                                from={{ scale: 1, opacity: 1 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                whileTap={{ scale: 0.98, opacity: 0.95 }}
+                                transition={{ type: 'timing', duration: 150 }}
                             >
-                                Login
-                            </Button>
+                                <Button
+                                    mode="contained"
+                                    onPress={handleLogin}
+                                    loading={loading}
+                                    disabled={loading}
+                                    style={styles.button}
+                                >
+                                    Login
+                                </Button>
+                            </MotiView>
 
-                            <Button
-                                onPress={handlePasswordReset}
-                                disabled={loading}
-                                style={styles.forgotPasswordButton}
+                            <MotiView
+                                from={{ scale: 1, opacity: 1 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                whileTap={{ scale: 0.98, opacity: 0.95 }}
+                                transition={{ type: 'timing', duration: 150 }}
                             >
-                                Forgot Password?
-                            </Button>
+                                <Button
+                                    onPress={handlePasswordReset}
+                                    disabled={loading}
+                                    style={styles.forgotPasswordButton}
+                                >
+                                    Forgot Password?
+                                </Button>
+                            </MotiView>
 
                             <View style={styles.separatorContainer}>
                                 <View style={[styles.separatorLine, { backgroundColor: theme.colors.outline }]} />
@@ -160,7 +174,7 @@ export default function LoginScreen() {
 
                             <Button
                                 mode="outlined"
-                                onPress={() => router.push("/(auth)/signup")}
+                                onPress={() => router.push('signup')}
                                 disabled={loading}
                             >
                                 Don't have an account? Sign Up

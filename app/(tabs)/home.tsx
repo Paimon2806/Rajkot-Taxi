@@ -83,7 +83,7 @@ export default function HomeScreen() {
         <Card.Content>
           <Button
             mode="contained"
-            onPress={() => router.push('/(tabs)/ridelist')}
+            onPress={() => router.push('ridelist')}
             style={styles.button}
           >
             Browse Available Rides
@@ -98,7 +98,7 @@ export default function HomeScreen() {
         <Card.Content>
           <Button
             mode="outlined"
-            onPress={() => router.push('/(tabs)/my-accepted-rides')}
+            onPress={() => router.push('my-accepted-rides')}
           >
             View My Accepted Rides
           </Button>
@@ -132,14 +132,14 @@ export default function HomeScreen() {
         <Card.Content>
           <Button
             mode="contained"
-            onPress={() => router.push('/(tabs)/ridepost')}
+            onPress={() => router.push('ridepost')}
             style={styles.button}
           >
             Post a New Ride
           </Button>
           <Button
             mode="outlined"
-            onPress={() => router.push('/(tabs)/my-accepted-rides')}
+            onPress={() => router.push('my-accepted-rides')}
             style={{marginTop: 10}}
           >
             View Accepted Rides

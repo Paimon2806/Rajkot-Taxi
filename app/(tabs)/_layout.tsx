@@ -1,7 +1,16 @@
-import { Tabs } from "expo-router";
+import { Redirect, Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useAuth } from "../../context/AuthContext";
 
 export default function TabLayout() {
+    const { user, isLoading } = useAuth();
+
+    // If the user is not authenticated, redirect to the login page.
+    if (!isLoading && !user) {
+        return <Redirect href="/(auth)/login" />;
+    }
+
+    // Render the tab navigator if the user is authenticated.
     return (
         <Tabs>
             <Tabs.Screen

@@ -51,14 +51,21 @@ export default function RideCard({
     const renderStatusAction = () => {
         if (!assignedTo) {
             return (
-                <Button
-                    mode="contained"
-                    onPress={() => onAccept(rideId)}
-                    style={styles.acceptButton}
-                    labelStyle={styles.acceptButtonLabel}
+                <MotiView
+                    from={{ scale: 1, opacity: 1 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    whileTap={{ scale: 0.95, opacity: 0.8 }}
+                    transition={{ type: 'timing', duration: 150 }}
                 >
-                    Accept Ride
-                </Button>
+                    <Button
+                        mode="contained"
+                        onPress={() => onAccept(rideId)}
+                        style={styles.acceptButton}
+                        labelStyle={styles.acceptButtonLabel}
+                    >
+                        Accept Ride
+                    </Button>
+                </MotiView>
             );
         } else if (assignedTo === user?.uid) {
             return (
@@ -83,24 +90,32 @@ export default function RideCard({
             style={styles.motiContainer}
         >
             <Card style={[styles.card, { backgroundColor: theme.colors.surface }]}>
-                <Card.Content>
-                    <View style={styles.header}>
-                        <Ionicons name="car" size={24} color={theme.colors.primary} style={styles.icon} />
-                        <Text variant="titleMedium" style={{ color: theme.colors.onSurface }}>{username}</Text>
-                    </View>
-                    <Text variant="headlineSmall" style={[styles.route, { color: theme.colors.onSurface }]}>
-                        {pickup} → {drop}
-                    </Text>
-                    <Text variant="bodyMedium" style={[styles.details, { color: theme.colors.onSurfaceVariant }]}>
-                        Fare: ₹{price}
-                    </Text>
-                    <Text variant="bodyMedium" style={[styles.details, { color: theme.colors.onSurfaceVariant }]}>
-                        Date: {date} at {time}
-                    </Text>
-                    <View style={styles.statusActionWrapper}>
-                        {renderStatusAction()}
-                    </View>
-                </Card.Content>
+                <MotiView
+                    from={{ scale: 1, opacity: 1 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    whileTap={{ scale: 0.98, opacity: 0.95 }}
+                    transition={{ type: 'timing', duration: 150 }}
+                    style={{ flex: 1 }}
+                >
+                    <Card.Content>
+                        <View style={styles.header}>
+                            <Ionicons name="car" size={24} color={theme.colors.primary} style={styles.icon} />
+                            <Text variant="titleMedium" style={{ color: theme.colors.onSurface }}>{username}</Text>
+                        </View>
+                        <Text variant="headlineSmall" style={[styles.route, { color: theme.colors.onSurface }]}>
+                            {pickup} → {drop}
+                        </Text>
+                        <Text variant="bodyMedium" style={[styles.details, { color: theme.colors.onSurfaceVariant }]}>
+                            Fare: ₹{price}
+                        </Text>
+                        <Text variant="bodyMedium" style={[styles.details, { color: theme.colors.onSurfaceVariant }]}>
+                            Date: {date} at {time}
+                        </Text>
+                        <View style={styles.statusActionWrapper}>
+                            {renderStatusAction()}
+                        </View>
+                    </Card.Content>
+                </MotiView>
             </Card>
         </MotiView>
     );

@@ -170,15 +170,22 @@ export default function SignUpScreen() {
                                 style={styles.segmentedButtons}
                             />
 
-                            <Button
-                                mode="contained"
-                                onPress={handleSignUp}
-                                loading={loading}
-                                disabled={loading}
-                                style={styles.button}
+                            <MotiView
+                                from={{ scale: 1, opacity: 1 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                whileTap={{ scale: 0.98, opacity: 0.95 }}
+                                transition={{ type: 'timing', duration: 150 }}
                             >
-                                Sign Up
-                            </Button>
+                                <Button
+                                    mode="contained"
+                                    onPress={handleSignUp}
+                                    loading={loading}
+                                    disabled={loading}
+                                    style={styles.button}
+                                >
+                                    Sign Up
+                                </Button>
+                            </MotiView>
 
                             <View style={styles.separatorContainer}>
                                 <View style={[styles.separatorLine, { backgroundColor: theme.colors.outline }]} />
@@ -188,7 +195,7 @@ export default function SignUpScreen() {
 
                             <Button
                                 mode="outlined"
-                                onPress={() => router.push("/(auth)/login")}
+                                onPress={() => router.push('login')}
                                 disabled={loading}
                             >
                                 Already have an account? Login

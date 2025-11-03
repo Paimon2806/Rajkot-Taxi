@@ -6,7 +6,7 @@ This document outlines future enhancements, ideas, and potential refinements for
 
 ## 1. UI/UX & Theming Enhancements
 
-1.  **Implement Smooth Page Transitions:** Add global screen transitions using `react-navigation-stack` or `expo-router`'s animation options for a more fluid user experience.
+1.  **[DONE] Implement Smooth Page Transitions:** Add global screen transitions using `react-navigation-stack` or `expo-router`'s animation options for a more fluid user experience.
 2.  **Refine Component-Level Animations:** Review existing `moti` animations and add more subtle, delightful animations to other interactive components (e.g., button presses, list item interactions, form field focus).
 3.  **Explore Custom Illustrations/Icons:** Integrate unique SVG illustrations or a custom icon font to further enhance the app's brand identity and visual appeal.
 4.  **Global UI Consistency Audit:** Conduct a thorough review of all screens to ensure consistent padding, margins, typography, and component usage (e.g., all `TextInput`s use `mode="outlined"`).

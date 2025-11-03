@@ -136,7 +136,7 @@ export default function MyPostedRidesScreen() {
                         </Text>
                         <Button
                             mode="contained"
-                            onPress={() => router.push('/(tabs)/ridepost')}
+                            onPress={() => router.push('/ridepost')}
                             style={{ marginTop: 16 }}
                         >
                             Post New Ride
