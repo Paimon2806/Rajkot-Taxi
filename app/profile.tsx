@@ -1,270 +1,182 @@
-import React, { useState } from "react";
+import React from "react";
 import {
     View,
-    Text,
-    Switch,
     StyleSheet,
-    Image,
-    TouchableOpacity,
     ScrollView,
     SafeAreaView,
     Alert,
-    ActivityIndicator,
 } from "react-native";
+import {
+    Avatar,
+    Button,
+    Card,
+    Divider,
+    List,
+    SegmentedButtons,
+    Text,
+    useTheme,
+} from "react-native-paper";
 import { useRouter } from "expo-router";
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { LocationService } from "../services/LocationService";
 import { useAuth } from "../context/AuthContext";
-import { logout } from "../services/authService"; // FIX: Import logout directly from your service
+import { useThemeContext } from "../context/ThemeContext";
+import { MotiView } from 'moti';
 
-// TypeScript interface for the OptionRow component's props.
-interface OptionRowProps {
-    icon: React.ReactNode;
-    title: string;
-    onPress: () => void;
-    color?: string;
-}
-
-// A Reusable Component for Option Buttons, properly typed.
-const OptionRow: React.FC<OptionRowProps> = ({ icon, title, onPress, color = "#333" }) => (
-    <TouchableOpacity style={styles.optionButton} onPress={onPress}>
-        <View style={{ marginRight: 15 }}>{icon}</View>
-        <Text style={[styles.optionText, { color }]}>{title}</Text>
-        <Ionicons name="chevron-forward" size={22} color="#ccc" style={styles.optionArrow} />
-    </TouchableOpacity>
-);
-
+import { Appbar } from 'react-native-paper';
 
 export default function ProfileScreen() {
     const router = useRouter();
-    // FIX: Get all user data and the loading state from your AuthContext
-    const { user, userName, userRole, isLoading } = useAuth();
+    const theme = useTheme();
+    const { user, userName, userRole } = useAuth();
+    const { themeMode, setThemeMode } = useThemeContext();
+    const { logout } = useAuth(); // Get logout function from context
 
-    const [isOnline, setIsOnline] = useState(false);
-
-    // FIX: Use the 'isLoading' state from your context for a reliable loading indicator
-    if (isLoading) {
-        return (
-            <SafeAreaView style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#007AFF" />
-            </SafeAreaView>
-        );
-    }
-
-    // After loading, if there's still no user, they might be logged out.
-    if (!user) {
-        // You can optionally redirect them to the login screen here
-        return (
-            <SafeAreaView style={styles.loadingContainer}>
-                <Text>Please log in to see your profile.</Text>
-            </SafeAreaView>
-        )
-    }
-
-    const handleLogout = () => {
-        Alert.alert("Logout", "Are you sure you want to log out?", [
-            { text: "Cancel", style: "cancel" },
-            {
-                text: "OK",
-                onPress: async () => {
-                    if(isOnline) {
-                        await LocationService.stopLocationTracking();
-                    }
-                    // FIX: Call the imported logout function
-                    await logout();
-                    router.replace("/(auth)/login"); // Redirect to login
-                },
-            },
-        ]);
-    };
-
-    const navigateToMyRides = () => {
-        router.push('/(tabs)/myrides');
-    };
-
-    const navigateToSettings = () => {
-        Alert.alert("Navigate", "This would take you to the settings screen.");
-    };
-
-    const navigateToEditProfile = () => {
-        Alert.alert("Navigate", "This would take you to the edit profile screen.");
-    }
-
-    const toggleOnlineStatus = (value: boolean) => {
-        setIsOnline(value);
-        if (value) {
-            LocationService.startLocationTracking();
-        } else {
-            LocationService.stopLocationTracking();
+    const handleLogout = async () => {
+        console.log("ProfileScreen: Logout button pressed (direct call).");
+        try {
+            await logout();
+            // The AuthProvider will handle redirecting to the login screen
+        } catch (error) {
+            console.error("Logout failed:", error);
+            Alert.alert("Error", "Failed to log out. Please try again.");
         }
     };
 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: "#F0F4F7" }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
+            <Appbar.Header>
+                <Appbar.BackAction onPress={() => router.back()} />
+                <Appbar.Content title="Profile" />
+            </Appbar.Header>
             <ScrollView contentContainerStyle={styles.container}>
-                <View style={styles.header}>
-                    <Image
-                        source={{
-                            uri: user.photoURL || `https://ui-avatars.com/api/?name=${userName || "User"}&background=random`,
-                        }}
-                        style={styles.avatar}
-                    />
-                    <Text style={styles.name}>{userName || "Guest"}</Text>
-                    <Text style={styles.email}>{user.email}</Text>
-                    <TouchableOpacity style={styles.editButton} onPress={navigateToEditProfile}>
-                        <Ionicons name="pencil" size={16} color="#007AFF" />
-                        <Text style={styles.editButtonText}>Edit Profile</Text>
-                    </TouchableOpacity>
-                </View>
-
-                {userRole === "driver" && (
-                    <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Driver Dashboard</Text>
-                        <View style={styles.switchContainer}>
-                            <MaterialCommunityIcons
-                                name={isOnline ? "car-connected" : "car-off"}
-                                size={24}
-                                color={isOnline ? "#4CAF50" : "#666"}
-                            />
-                            <Text style={styles.switchLabel}>
-                                {isOnline ? "You are Online" : "You are Offline"}
-                            </Text>
-                            <Switch
-                                trackColor={{ false: "#D1D5DB", true: "#81b0ff" }}
-                                thumbColor={isOnline ? "#007AFF" : "#f4f3f4"}
-                                onValueChange={toggleOnlineStatus}
-                                value={isOnline}
-                            />
-                        </View>
+                <MotiView
+                    from={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ type: 'timing' }}
+                >
+                    <View style={styles.header}>
+                        <Avatar.Text size={80} label={userName?.charAt(0) || 'U'} style={styles.avatar} />
+                        <Text variant="headlineLarge" style={styles.name}>{userName || "Guest"}</Text>
+                        <Text variant="titleMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+                            {user?.email} ({userRole})
+                        </Text>
                     </View>
-                )}
+                </MotiView>
 
-                <View style={styles.section}>
-                    <OptionRow
-                        icon={<Ionicons name="car-sport-outline" size={24} color="#007AFF" />}
-                        title="My Rides"
-                        onPress={navigateToMyRides}
-                    />
-                    <OptionRow
-                        icon={<Ionicons name="settings-outline" size={24} color="#007AFF" />}
-                        title="Settings"
-                        onPress={navigateToSettings}
-                    />
-                </View>
+                <MotiView
+                    from={{ opacity: 0, translateY: 20 }}
+                    animate={{ opacity: 1, translateY: 0 }}
+                    transition={{ type: 'timing', delay: 200 }}
+                >
+                    <Card style={styles.section}>
+                        <Card.Title title="Quick Stats" />
+                        <Card.Content style={styles.statsContainer}>
+                            <View style={styles.statItem}>
+                                <Text variant="headlineMedium">12</Text>
+                                <Text variant="bodyMedium">Rides Completed</Text>
+                            </View>
+                            <View style={styles.statItem}>
+                                <Text variant="headlineMedium">4.9 ★</Text>
+                                <Text variant="bodyMedium">Rating</Text>
+                            </View>
+                        </Card.Content>
+                    </Card>
+                </MotiView>
 
-                <View style={styles.section}>
-                    <OptionRow
-                        icon={<Ionicons name="log-out-outline" size={24} color="#FF3B30" />}
-                        title="Logout"
+                <MotiView
+                    from={{ opacity: 0, translateY: 20 }}
+                    animate={{ opacity: 1, translateY: 0 }}
+                    transition={{ type: 'timing', delay: 300 }}
+                >
+                    <Card style={styles.section}>
+                        <Card.Title title="Preferences" />
+                        <List.Item
+                            title="App Theme"
+                            description="Choose your preferred interface look"
+                            left={() => <List.Icon icon="palette" />}
+                        />
+                        <SegmentedButtons
+                            value={themeMode}
+                            onValueChange={(value) => setThemeMode(value as any)}
+                            buttons={[
+                                { value: 'light', label: 'Light' },
+                                { value: 'dark', label: 'Dark' },
+                                { value: 'system', label: 'System' },
+                            ]}
+                            style={styles.segmentedButtons}
+                        />
+                    </Card>
+                </MotiView>
+
+                <MotiView
+                    from={{ opacity: 0, translateY: 20 }}
+                    animate={{ opacity: 1, translateY: 0 }}
+                    transition={{ type: 'timing', delay: 400 }}
+                >
+                    <Card style={styles.section}>
+                        <List.Item
+                            title="My Rides History"
+                            description="View all your past journeys"
+                            left={() => <List.Icon icon="history" />}
+                            onPress={() => router.push('/my-posted-rides')}
+                        />
+                        <Divider />
+                        <List.Item
+                            title="Support & FAQ"
+                            description="Get help and find answers"
+                            left={() => <List.Icon icon="help-circle-outline" />}
+                            onPress={() => Alert.alert("Support", "This would navigate to the support screen.")}
+                        />
+                    </Card>
+                </MotiView>
+
+                <MotiView
+                    from={{ opacity: 0, translateY: 20 }}
+                    animate={{ opacity: 1, translateY: 0 }}
+                    transition={{ type: 'timing', delay: 500 }}
+                >
+                    <Button
+                        icon="logout"
+                        mode="contained"
                         onPress={handleLogout}
-                        color="#FF3B30"
-                    />
-                </View>
+                        style={styles.logoutButton}
+                        buttonColor={theme.colors.error}
+                    >
+                        Logout
+                    </Button>
+                </MotiView>
             </ScrollView>
         </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: "#F0F4F7",
-    },
     container: {
-        paddingVertical: 24,
-        paddingHorizontal: 16,
+        padding: 16,
     },
     header: {
         alignItems: 'center',
-        backgroundColor: '#FFF',
-        borderRadius: 16,
-        padding: 24,
         marginBottom: 24,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-        elevation: 5,
     },
     avatar: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
         marginBottom: 16,
-        borderWidth: 3,
-        borderColor: '#007AFF',
     },
     name: {
-        fontSize: 24,
         fontWeight: 'bold',
-        color: '#1F2937',
-    },
-    email: {
-        fontSize: 16,
-        color: '#6B7280',
-        marginBottom: 16,
-    },
-    editButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#E5EFFF',
-        paddingVertical: 8,
-        paddingHorizontal: 16,
-        borderRadius: 20,
-    },
-    editButtonText: {
-        marginLeft: 8,
-        color: '#007AFF',
-        fontWeight: '600',
     },
     section: {
-        backgroundColor: '#FFF',
-        borderRadius: 16,
-        marginBottom: 24,
-        overflow: 'hidden',
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-        elevation: 5,
+        marginBottom: 16,
     },
-    sectionTitle: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#1F2937',
-        padding: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#F3F4F6',
-    },
-    switchContainer: {
+    statsContainer: {
         flexDirection: 'row',
+        justifyContent: 'space-around',
+    },
+    statItem: {
         alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: 16,
     },
-    switchLabel: {
-        fontSize: 16,
-        fontWeight: '500',
-        color: '#374151',
-        flex: 1,
-        marginLeft: 12,
+    segmentedButtons: {
+        margin: 16,
     },
-    optionButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 16,
-        backgroundColor: '#FFF',
-        borderBottomWidth: 1,
-        borderBottomColor: '#F3F4F6',
-    },
-    optionText: {
-        fontSize: 16,
-        fontWeight: '500',
-    },
-    optionArrow: {
-        marginLeft: 'auto',
+    logoutButton: {
+        marginTop: 16,
     },
 });
-

@@ -63,7 +63,7 @@ export default function RidePost() {
 
             // --- NEW: Better navigation ---
             // Instead of the home screen, go to the "My Rides" tab.
-            router.push("/(tabs)/myrides");
+            router.push("/(tabs)/ridelist");
 
         } catch (error) {
             Alert.alert("Error", "Failed to post ride.");

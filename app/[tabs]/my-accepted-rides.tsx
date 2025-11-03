@@ -1,12 +1,8 @@
-
-
 import React, { useEffect, useState } from "react";
 import {
     View,
     FlatList,
     StyleSheet,
-    ActivityIndicator,
-    Text,
     Alert,
 } from "react-native";
 import {
@@ -19,6 +15,7 @@ import {
 import { getAuth } from "firebase/auth";
 import { db } from "../../config/firebaseConfig";
 import RideCard from "../../components/RideCard";
+import { Appbar, Text, useTheme, ActivityIndicator } from "react-native-paper";
 
 interface Ride {
     id: string;
@@ -36,6 +33,7 @@ interface Ride {
 export default function MyAcceptedRidesScreen() {
     const [rides, setRides] = useState<Ride[]>([]);
     const [loading, setLoading] = useState(true);
+    const theme = useTheme();
     const auth = getAuth();
     const currentUser = auth.currentUser;
 
@@ -54,37 +52,35 @@ export default function MyAcceptedRidesScreen() {
         );
 
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
-                const ridesData: Ride[] = [];
-                querySnapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
-                    ridesData.push({
-                        id: docSnap.id,
-                        pickup: data.pickup,
-                        drop: data.drop,
-                        date: data.date,
-                        time: data.time,
-                        price: data.price,
-                        username: data.username,
-                        status: data.status || "pending",
-                        assignedTo: data.assignedTo || null,
-                        timestamp: data.timestamp,
-                    });
+            const ridesData: Ride[] = [];
+            querySnapshot.forEach((docSnap) => {
+                const data = docSnap.data();
+                ridesData.push({
+                    id: docSnap.id,
+                    pickup: data.pickup,
+                    drop: data.drop,
+                    date: data.date,
+                    time: data.time,
+                    price: data.price,
+                    username: data.username,
+                    status: data.status || "pending",
+                    assignedTo: data.assignedTo || null,
+                    timestamp: data.timestamp,
                 });
-                setRides(ridesData);
-                setLoading(false);
-            },
-            (error) => {
-                console.error("Error fetching my accepted rides: ", error);
-                setLoading(false);
-                Alert.alert("Error", "Failed to load your accepted rides. Please try again.");
-            }
-        );
+            });
+            setRides(ridesData);
+            setLoading(false);
+        }, (error) => {
+            console.error("Error fetching my accepted rides: ", error);
+            setLoading(false);
+            Alert.alert("Error", "Failed to load your accepted rides. Please try again.");
+        });
 
         return () => unsubscribe();
     }, [currentUser]);
 
     const handleActionOnAcceptedRide = (rideId: string) => {
-        Alert.alert("Ride Action", `You are trying to act on ride: ${rideId}`);
+        Alert.alert("Ride Action", `This is where you would add actions for an accepted ride, like starting or completing it. Ride ID: ${rideId}`);
     };
 
     const renderItem = ({ item }: { item: Ride }) => (
@@ -104,37 +100,30 @@ export default function MyAcceptedRidesScreen() {
 
     if (loading) {
         return (
-            <View style={styles.loaderContainer}>
-                <ActivityIndicator size="large" color="#007bff" />
-            </View>
-        );
-    }
-
-    if (!currentUser) {
-        return (
-            <View style={styles.container}>
-                <Text style={styles.messageText}>Please log in to view your accepted rides.</Text>
-            </View>
-        );
-    }
-
-    if (rides.length === 0) {
-        return (
-            <View style={styles.container}>
-                <Text style={styles.messageText}>
-                    Looks like you haven't accepted any rides yet.
-                </Text>
+            <View style={[styles.loaderContainer, { backgroundColor: theme.colors.background }]}>
+                <ActivityIndicator size="large" color={theme.colors.primary} />
             </View>
         );
     }
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+            <Appbar.Header>
+                <Appbar.Content title="My Accepted Rides" />
+            </Appbar.Header>
             <FlatList
                 data={rides}
                 keyExtractor={(item) => item.id}
                 renderItem={renderItem}
                 contentContainerStyle={styles.listContainer}
+                ListEmptyComponent={
+                    <View style={styles.emptyContainer}>
+                        <Text variant="headlineSmall">No accepted rides</Text>
+                        <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+                            When you accept a ride, it will appear here.
+                        </Text>
+                    </View>
+                }
             />
         </View>
     );
@@ -143,23 +132,19 @@ export default function MyAcceptedRidesScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#f4f4f4",
-        padding: 20,
     },
     listContainer: {
-        paddingBottom: 20,
+        padding: 16,
     },
     loaderContainer: {
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: '#f4f4f4',
     },
-    messageText: {
-        textAlign: 'center',
-        marginTop: 50,
-        fontSize: 16,
-        color: '#777',
-        paddingHorizontal: 20,
-    }
+    emptyContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 100,
+    },
 });

@@ -1,22 +1,23 @@
-
-
 import React, { useState } from "react";
 import {
     View,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    Alert,
     StyleSheet,
-    ActivityIndicator,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
+    Alert,
 } from "react-native";
-// import { Picker } from '@react-native-picker/picker';
+import {
+    TextInput,
+    Button,
+    Text,
+    useTheme,
+    Card,
+    SegmentedButtons,
+} from "react-native-paper";
+import { MotiView } from 'moti';
 import { signUp } from "../../services/authService";
 import { useRouter } from "expo-router";
-
 
 interface FirebaseError extends Error {
     code?: string;
@@ -24,6 +25,7 @@ interface FirebaseError extends Error {
 
 export default function SignUpScreen() {
     const router = useRouter();
+    const theme = useTheme();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [name, setName] = useState("");
@@ -98,7 +100,7 @@ export default function SignUpScreen() {
         try {
             await signUp(email.trim(), password, name.trim(), role);
             Alert.alert("Success", "Account created successfully! Please log in.");
-            router.replace("/login");
+            router.replace("/(auth)/login");
         } catch (err) {
             handleAuthError(err as FirebaseError);
         } finally {
@@ -109,114 +111,91 @@ export default function SignUpScreen() {
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
-            style={styles.keyboardAvoidingContainer}
+            style={[styles.keyboardAvoidingContainer, { backgroundColor: theme.colors.background }]}
         >
             <ScrollView contentContainerStyle={styles.scrollContainer}>
-                <View style={styles.container}>
-                    <Text style={styles.title}>Sign Up</Text>
+                <MotiView
+                    from={{ opacity: 0, translateY: 50 }}
+                    animate={{ opacity: 1, translateY: 0 }}
+                    transition={{ type: 'timing', duration: 500 }}
+                    style={styles.container}
+                >
+                    <Card style={styles.card}>
+                        <Card.Content>
+                            <Text variant="headlineLarge" style={[styles.title, { color: theme.colors.primary }]}>
+                                Create Account
+                            </Text>
 
-                    {error && <Text style={styles.errorText}>{error}</Text>}
+                            {error && <Text style={styles.errorText}>{error}</Text>}
 
-                    <Text style={styles.label}>Name</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Enter your name"
-                        value={name}
-                        onChangeText={setName}
-                        autoCapitalize="words"
-                        placeholderTextColor="#888"
-                        editable={!loading}
-                    />
+                            <TextInput
+                                label="Name"
+                                value={name}
+                                onChangeText={setName}
+                                autoCapitalize="words"
+                                style={styles.input}
+                                editable={!loading}
+                            />
 
-                    <Text style={styles.label}>Email</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Enter your email"
-                        value={email}
-                        onChangeText={(text) => setEmail(text.toLowerCase())}
-                        keyboardType="email-address"
-                        autoCapitalize="none"
-                        autoComplete="email"
-                        placeholderTextColor="#888"
-                        editable={!loading}
-                    />
+                            <TextInput
+                                label="Email"
+                                value={email}
+                                onChangeText={(text) => setEmail(text.toLowerCase())}
+                                keyboardType="email-address"
+                                autoCapitalize="none"
+                                autoComplete="email"
+                                style={styles.input}
+                                editable={!loading}
+                            />
 
-                    <Text style={styles.label}>Password</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Enter your password"
-                        value={password}
-                        onChangeText={setPassword}
-                        secureTextEntry
-                        autoCapitalize="none"
-                        autoComplete="new-password"
-                        placeholderTextColor="#888"
-                        editable={!loading}
-                    />
+                            <TextInput
+                                label="Password"
+                                value={password}
+                                onChangeText={setPassword}
+                                secureTextEntry
+                                autoCapitalize="none"
+                                autoComplete="new-password"
+                                style={styles.input}
+                                editable={!loading}
+                            />
 
-                    <Text style={styles.label}>Role</Text>
-                    {/* <--- START OF RADIO BUTTON IMPLEMENTATION ---/> */}
-                    <View style={styles.roleSelectionContainer}>
-                        <TouchableOpacity
-                            style={[
-                                styles.roleOption,
-                                role === "driver" && styles.roleOptionSelected,
-                                loading && styles.roleOptionDisabled
-                            ]}
-                            onPress={() => setRole("driver")}
-                            disabled={loading}
-                        >
-                            <Text style={[
-                                styles.roleOptionText,
-                                role === "driver" && styles.roleOptionTextSelected,
-                                loading && styles.roleOptionTextDisabled
-                            ]}>Driver</Text>
-                        </TouchableOpacity>
+                            <Text style={styles.label}>I am a...</Text>
+                            <SegmentedButtons
+                                value={role}
+                                onValueChange={setRole}
+                                buttons={[
+                                    { value: 'driver', label: 'Driver' },
+                                    { value: 'passenger', label: 'Passenger' },
+                                ]}
+                                style={styles.segmentedButtons}
+                            />
 
-                        <TouchableOpacity
-                            style={[
-                                styles.roleOption,
-                                role === "passenger" && styles.roleOptionSelected,
-                                loading && styles.roleOptionDisabled
-                            ]}
-                            onPress={() => setRole("passenger")}
-                            disabled={loading}
-                        >
-                            <Text style={[
-                                styles.roleOptionText,
-                                role === "passenger" && styles.roleOptionTextSelected,
-                                loading && styles.roleOptionTextDisabled
-                            ]}>Passenger</Text>
-                        </TouchableOpacity>
-                    </View>
-                    {/* <--- END OF RADIO BUTTON IMPLEMENTATION ---/> */}
+                            <Button
+                                mode="contained"
+                                onPress={handleSignUp}
+                                loading={loading}
+                                disabled={loading}
+                                style={styles.button}
+                            >
+                                Sign Up
+                            </Button>
 
-                    {loading ? (
-                        <ActivityIndicator size="large" color={styles.button.backgroundColor} style={styles.button} />
-                    ) : (
-                        <TouchableOpacity
-                            style={styles.button}
-                            onPress={handleSignUp}
-                            disabled={loading}
-                        >
-                            <Text style={styles.buttonText}>Sign Up</Text>
-                        </TouchableOpacity>
-                    )}
+                            <View style={styles.separatorContainer}>
+                                <View style={[styles.separatorLine, { backgroundColor: theme.colors.outline }]} />
+                                <Text style={{ color: theme.colors.onSurfaceVariant }}>OR</Text>
+                                <View style={[styles.separatorLine, { backgroundColor: theme.colors.outline }]} />
+                            </View>
 
-                    <View style={styles.separatorContainer}>
-                        <View style={styles.separatorLine} />
-                        <Text style={styles.separatorText}>OR</Text>
-                        <View style={styles.separatorLine} />
-                    </View>
-
-                    <TouchableOpacity
-                        style={styles.secondaryButton}
-                        onPress={() => router.push("/login")}
-                        disabled={loading}
-                    >
-                        <Text style={styles.secondaryButtonText}>Already have an account? Login</Text>
-                    </TouchableOpacity>
-                </View>
+                            <Button
+                                mode="outlined"
+                                onPress={() => router.push("/(auth)/login")}
+                                disabled={loading}
+                            >
+                                Already have an account? Login
+                            </Button>
+                        </Card.Content>
+                    </Card>
+                </MotiView>
             </ScrollView>
         </KeyboardAvoidingView>
     );
@@ -229,152 +208,49 @@ const styles = StyleSheet.create({
     scrollContainer: {
         flexGrow: 1,
         justifyContent: 'center',
-        backgroundColor: '#F7F9FC',
+        padding: 16,
     },
     container: {
-        marginHorizontal: 20,
-        padding: 25,
-        backgroundColor: '#FFFFFF',
-        borderRadius: 12,
-        shadowColor: "#000000",
-        shadowOffset: {
-            width: 0,
-            height: 3,
-        },
-        shadowOpacity: 0.05,
-        shadowRadius: 6,
-        elevation: 5,
+        flex: 1,
+        justifyContent: 'center',
+    },
+    card: {
+        padding: 8,
     },
     title: {
-        fontSize: 30,
-        fontWeight: "bold",
-        marginBottom: 25,
+        marginBottom: 24,
         textAlign: "center",
-        color: '#2C3E50',
+        fontWeight: 'bold',
     },
     label: {
-        fontSize: 14,
-        color: '#555',
-        marginBottom: 5,
-        marginLeft: 2,
+        marginBottom: 8,
+        marginLeft: 4,
+        fontSize: 16,
     },
     input: {
-        height: 50,
-        backgroundColor: '#F0F3F7',
-        borderWidth: 1,
-        borderColor: '#DDE2E8',
-        borderRadius: 8,
-        paddingHorizontal: 15,
-        marginBottom: 18,
-        fontSize: 16,
-        color: '#2C3E50',
+        marginBottom: 16,
+    },
+    segmentedButtons: {
+        marginBottom: 16,
     },
     button: {
-        width: '100%',
-        height: 50,
-        backgroundColor: '#3498DB',
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRadius: 8,
-        marginBottom: 12,
-    },
-    buttonText: {
-        color: '#FFFFFF',
-        fontSize: 18,
-        fontWeight: '600',
+        marginTop: 8,
+        paddingVertical: 4,
     },
     separatorContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginVertical: 20,
+        marginVertical: 24,
     },
     separatorLine: {
         flex: 1,
         height: 1,
-        backgroundColor: '#DDE2E8',
-    },
-    separatorText: {
-        marginHorizontal: 10,
-        color: '#7F8C8D',
-        fontSize: 14,
-    },
-    secondaryButton: {
-        width: '100%',
-        height: 50,
-        backgroundColor: '#FFFFFF',
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: '#3498DB',
-    },
-    secondaryButtonText: {
-        color: '#3498DB',
-        fontSize: 17,
-        fontWeight: '500',
+        marginHorizontal: 8,
     },
     errorText: {
         color: '#E74C3C',
-        marginBottom: 15,
+        marginBottom: 16,
         textAlign: 'center',
-        fontSize: 14,
         fontWeight: '500',
     },
-
-    roleSelectionContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        marginBottom: 18,
-        backgroundColor: '#F0F3F7',
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: '#DDE2E8',
-        overflow: 'hidden',
-    },
-    roleOption: {
-        flex: 1,
-        paddingVertical: 15,
-        alignItems: 'center',
-
-        // borderRightWidth: 1,
-        // borderRightColor: '#DDE2E8',
-    },
-
-    // 'roleOption:last-child': { borderRightWidth: 0 },
-    roleOptionSelected: {
-        backgroundColor: '#3498DB',
-        borderColor: '#3498DB',
-    },
-    roleOptionText: {
-        fontSize: 16,
-        fontWeight: '500',
-        color: '#2C3E50',
-    },
-    roleOptionTextSelected: {
-        color: '#FFFFFF',
-    },
-    roleOptionDisabled: {
-        opacity: 0.6,
-    },
-    roleOptionTextDisabled: {
-        color: '#888',
-    },
-
-
-
-    // pickerContainer: {
-    //     borderWidth: 1,
-    //     borderColor: '#DDE2E8',
-    //     borderRadius: 8,
-    //     marginBottom: 18,
-    //     overflow: 'hidden',
-    //     backgroundColor: '#F0F3F7',
-    //     height: 50,
-    //     justifyContent: 'center',
-    // },
-    // picker: {
-    //     height: 50,
-    //     width: '100%',
-    //     color: '#2C3E50',
-    // },
 });

@@ -1,39 +1,34 @@
-// src/app/_layout.tsx
-
 import React from 'react';
 import { Slot, useRouter, useSegments } from 'expo-router';
-import { ActivityIndicator, View, StyleSheet } from 'react-native';
+import { ActivityIndicator, View, StyleSheet, useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from '../context/AuthContext';
+import { PaperProvider } from 'react-native-paper';
+import { lightTheme, darkTheme } from '../constants/theme';
+import { useFonts, Inter_400Regular, Inter_700Bold } from '@expo-google-fonts/inter';
+import { SplashScreen } from 'expo-router';
+import { ThemeProvider, useThemeContext } from '../context/ThemeContext';
 
-// This component uses the auth context and handles navigation logic
 function RootLayoutNav() {
     const { user, isLoading } = useAuth();
     const router = useRouter();
     const segments = useSegments();
 
-    // Protect routes based on authentication status
     React.useEffect(() => {
         if (isLoading) return;
-
-        // Check the first segment to determine the group
-        // Using type assertion to fix TypeScript error
-        const inAuthGroup = segments[0] as string === '(auth)';
-
+        const inAuthGroup = segments[0] === '(auth)';
         if (user && inAuthGroup) {
-            // User is signed in but on an auth screen - redirect to home
-            router.replace('/tabs/home');
-        } else if (!user && !inAuthGroup && segments[0] !== '_sitemap') {
-            // User is not signed in and not on an auth screen - redirect to login
-            router.replace('/login');
+            router.replace('/(tabs)/home');
+        } else if (!user && !inAuthGroup) {
+            router.replace('/(auth)/login');
         }
     }, [user, isLoading, segments, router]);
 
     if (isLoading) {
         return (
             <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#3498DB" />
+                <ActivityIndicator size="large" />
             </View>
         );
     }
@@ -41,13 +36,43 @@ function RootLayoutNav() {
     return <Slot />;
 }
 
-// Main layout component that provides the auth context
+function ThemedApp() {
+    const { themeMode } = useThemeContext();
+    const systemColorScheme = useColorScheme();
+    const theme = themeMode === 'system'
+        ? (systemColorScheme === 'dark' ? darkTheme : lightTheme)
+        : (themeMode === 'dark' ? darkTheme : lightTheme);
+
+    return (
+        <PaperProvider theme={theme}>
+            <RootLayoutNav />
+        </PaperProvider>
+    );
+}
+
 export default function RootLayout() {
+    const [fontsLoaded] = useFonts({
+        Inter_400Regular,
+        Inter_700Bold,
+    });
+
+    React.useEffect(() => {
+        if (fontsLoaded) {
+            SplashScreen.hideAsync();
+        }
+    }, [fontsLoaded]);
+
+    if (!fontsLoaded) {
+        return null;
+    }
+
     return (
         <GestureHandlerRootView style={styles.fullScreen}>
             <SafeAreaProvider>
                 <AuthProvider>
-                    <RootLayoutNav />
+                    <ThemeProvider>
+                        <ThemedApp />
+                    </ThemeProvider>
                 </AuthProvider>
             </SafeAreaProvider>
         </GestureHandlerRootView>
@@ -59,7 +84,6 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#F7F9FC',
     },
     fullScreen: {
         flex: 1,

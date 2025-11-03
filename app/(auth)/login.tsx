@@ -1,21 +1,15 @@
-
-
 import React, { useState } from "react";
 import {
     View,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    Alert,
     StyleSheet,
-    ActivityIndicator,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
 } from "react-native";
-import { signIn, sendPasswordReset } from "../../services/authService";
+import { TextInput, Button, Text, useTheme, Card } from "react-native-paper";
+import { MotiView } from 'moti';
+import { signIn } from "../../services/authService";
 import { useRouter } from "expo-router";
-
 
 interface FirebaseError extends Error {
     code?: string;
@@ -23,6 +17,7 @@ interface FirebaseError extends Error {
 
 export default function LoginScreen() {
     const router = useRouter();
+    const theme = useTheme();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
@@ -60,7 +55,7 @@ export default function LoginScreen() {
         console.error('Auth Error:', authError);
     };
 
-    const validateInputs = (isForPasswordReset = false) => {
+    const validateInputs = () => {
         if (!email.trim()) {
             setError("Please enter your email address.");
             return false;
@@ -70,7 +65,7 @@ export default function LoginScreen() {
             setError("Please enter a valid email address.");
             return false;
         }
-        if (!isForPasswordReset && !password.trim()) {
+        if (!password.trim()) {
             setError("Please enter your password.");
             return false;
         }
@@ -85,7 +80,6 @@ export default function LoginScreen() {
         setError(null);
         try {
             await signIn(email.trim(), password);
-            // Alert.alert("Success", "Logged in successfully!");
             router.replace("/(tabs)/home");
         } catch (err) {
             handleAuthError(err as FirebaseError);
@@ -94,7 +88,6 @@ export default function LoginScreen() {
         }
     };
 
-
     const handlePasswordReset = () => {
         router.push("/(auth)/forgotpassword");
     };
@@ -102,74 +95,79 @@ export default function LoginScreen() {
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
-            style={styles.keyboardAvoidingContainer}
+            style={[styles.keyboardAvoidingContainer, { backgroundColor: theme.colors.background }]}
         >
             <ScrollView contentContainerStyle={styles.scrollContainer}>
-                <View style={styles.container}>
-                    <Text style={styles.title}>Login</Text>
+                <MotiView
+                    from={{ opacity: 0, translateY: 50 }}
+                    animate={{ opacity: 1, translateY: 0 }}
+                    transition={{ type: 'timing', duration: 500 }}
+                    style={styles.container}
+                >
+                    <Card style={styles.card}>
+                        <Card.Content>
+                            <Text variant="headlineLarge" style={[styles.title, { color: theme.colors.primary }]}>
+                                Welcome Back
+                            </Text>
 
-                    {error && <Text style={styles.errorText}>{error}</Text>}
+                            {error && <Text style={styles.errorText}>{error}</Text>}
 
-                    <Text style={styles.label}>Email</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Enter your email"
-                        value={email}
-                        onChangeText={(text) => setEmail(text.toLowerCase())}
-                        keyboardType="email-address"
-                        autoCapitalize="none"
-                        autoComplete="email"
-                        placeholderTextColor="#888"
-                        editable={!loading}
-                    />
+                            <TextInput
+                                label="Email"
+                                value={email}
+                                onChangeText={(text) => setEmail(text.toLowerCase())}
+                                keyboardType="email-address"
+                                autoCapitalize="none"
+                                autoComplete="email"
+                                style={styles.input}
+                                editable={!loading}
+                            />
 
-                    <Text style={styles.label}>Password</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Enter your password"
-                        value={password}
-                        onChangeText={setPassword}
-                        secureTextEntry
-                        autoCapitalize="none"
-                        autoComplete="current-password"
-                        placeholderTextColor="#888"
-                        editable={!loading}
-                    />
+                            <TextInput
+                                label="Password"
+                                value={password}
+                                onChangeText={setPassword}
+                                secureTextEntry
+                                autoCapitalize="none"
+                                autoComplete="current-password"
+                                style={styles.input}
+                                editable={!loading}
+                            />
 
-                    {loading ? (
-                        <ActivityIndicator size="large" color={styles.button.backgroundColor} style={styles.button} />
-                    ) : (
-                        <TouchableOpacity
-                            style={styles.button}
-                            onPress={handleLogin}
-                            disabled={loading}
-                        >
-                            <Text style={styles.buttonText}>Login</Text>
-                        </TouchableOpacity>
-                    )}
+                            <Button
+                                mode="contained"
+                                onPress={handleLogin}
+                                loading={loading}
+                                disabled={loading}
+                                style={styles.button}
+                            >
+                                Login
+                            </Button>
 
-                    <TouchableOpacity
-                        style={styles.linkButton}
-                        onPress={handlePasswordReset}
-                        disabled={loading}
-                    >
-                        <Text style={styles.linkButtonText}>Forgot Password?</Text>
-                    </TouchableOpacity>
+                            <Button
+                                onPress={handlePasswordReset}
+                                disabled={loading}
+                                style={styles.forgotPasswordButton}
+                            >
+                                Forgot Password?
+                            </Button>
 
-                    <View style={styles.separatorContainer}>
-                        <View style={styles.separatorLine} />
-                        <Text style={styles.separatorText}>OR</Text>
-                        <View style={styles.separatorLine} />
-                    </View>
+                            <View style={styles.separatorContainer}>
+                                <View style={[styles.separatorLine, { backgroundColor: theme.colors.outline }]} />
+                                <Text style={{ color: theme.colors.onSurfaceVariant }}>OR</Text>
+                                <View style={[styles.separatorLine, { backgroundColor: theme.colors.outline }]} />
+                            </View>
 
-                    <TouchableOpacity
-                        style={styles.secondaryButton}
-                        onPress={() => router.push("/signup")}
-                        disabled={loading}
-                    >
-                        <Text style={styles.secondaryButtonText}>Don't have an account? Sign Up</Text>
-                    </TouchableOpacity>
-                </View>
+                            <Button
+                                mode="outlined"
+                                onPress={() => router.push("/(auth)/signup")}
+                                disabled={loading}
+                            >
+                                Don't have an account? Sign Up
+                            </Button>
+                        </Card.Content>
+                    </Card>
+                </MotiView>
             </ScrollView>
         </KeyboardAvoidingView>
     );
@@ -182,107 +180,44 @@ const styles = StyleSheet.create({
     scrollContainer: {
         flexGrow: 1,
         justifyContent: 'center',
-        backgroundColor: '#F7F9FC', // A light, neutral background
+        padding: 16,
     },
     container: {
-        marginHorizontal: 20,
-        padding: 25,
-        backgroundColor: '#FFFFFF',
-        borderRadius: 12,
-        shadowColor: "#000000",
-        shadowOffset: {
-            width: 0,
-            height: 3,
-        },
-        shadowOpacity: 0.05,
-        shadowRadius: 6,
-        elevation: 5, // For Android
+        flex: 1,
+        justifyContent: 'center',
+    },
+    card: {
+        padding: 8,
     },
     title: {
-        fontSize: 30,
-        fontWeight: "bold",
-        marginBottom: 25,
+        marginBottom: 24,
         textAlign: "center",
-        color: '#2C3E50', // Dark blue-gray
-    },
-    label: {
-        fontSize: 14,
-        color: '#555',
-        marginBottom: 5,
-        marginLeft: 2,
+        fontWeight: 'bold',
     },
     input: {
-        height: 50,
-        backgroundColor: '#F0F3F7', // Light gray input background
-        borderWidth: 1,
-        borderColor: '#DDE2E8', // Softer border color
-        borderRadius: 8,
-        paddingHorizontal: 15,
-        marginBottom: 18,
-        fontSize: 16,
-        color: '#2C3E50',
+        marginBottom: 16,
     },
     button: {
-        width: '100%',
-        height: 50,
-        backgroundColor: '#3498DB', // A pleasant blue
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRadius: 8,
-        marginBottom: 12,
+        marginTop: 8,
+        paddingVertical: 4,
     },
-    buttonText: {
-        color: '#FFFFFF',
-        fontSize: 18,
-        fontWeight: '600',
-    },
-    linkButton: {
-        alignSelf: 'center',
-        paddingVertical: 8,
-        marginBottom: 20,
-    },
-    linkButtonText: {
-        color: '#3498DB',
-        fontSize: 15,
-    },
-    disabledText: {
-        color: '#AAB8C2' // Light gray for disabled text
+    forgotPasswordButton: {
+        marginTop: 8,
     },
     separatorContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginVertical: 20,
+        marginVertical: 24,
     },
     separatorLine: {
         flex: 1,
         height: 1,
-        backgroundColor: '#DDE2E8',
-    },
-    separatorText: {
-        marginHorizontal: 10,
-        color: '#7F8C8D', // Muted gray
-        fontSize: 14,
-    },
-    secondaryButton: {
-        width: '100%',
-        height: 50,
-        backgroundColor: '#FFFFFF',
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: '#3498DB',
-    },
-    secondaryButtonText: {
-        color: '#3498DB',
-        fontSize: 17,
-        fontWeight: '500',
+        marginHorizontal: 8,
     },
     errorText: {
-        color: '#E74C3C', // A standard error red
-        marginBottom: 15,
+        color: '#E74C3C',
+        marginBottom: 16,
         textAlign: 'center',
-        fontSize: 14,
         fontWeight: '500',
     },
 });

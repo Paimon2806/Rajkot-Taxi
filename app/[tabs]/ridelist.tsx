@@ -3,9 +3,7 @@ import {
     View,
     FlatList,
     StyleSheet,
-    ActivityIndicator,
     Alert,
-    Text,
 } from "react-native";
 import {
     collection,
@@ -16,7 +14,7 @@ import {
 import { db } from "../../config/firebaseConfig";
 import RideCard from "../../components/RideCard";
 import { acceptRideRequest } from "../../services/RideActionsService";
-
+import { Appbar, Text, useTheme, ActivityIndicator } from "react-native-paper";
 
 interface Ride {
     id: string;
@@ -34,8 +32,7 @@ interface Ride {
 export default function RideList() {
     const [rides, setRides] = useState<Ride[]>([]);
     const [loading, setLoading] = useState(true);
-
-
+    const theme = useTheme();
 
     useEffect(() => {
         const q = query(
@@ -43,36 +40,33 @@ export default function RideList() {
             orderBy("timestamp", "desc")
         );
 
-
-        return onSnapshot(q, (querySnapshot) => {
-                const ridesData: Ride[] = [];
-                querySnapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
-                    ridesData.push({
-                        id: docSnap.id,
-                        pickup: data.pickup,
-                        drop: data.drop,
-                        date: data.date,
-                        time: data.time,
-                        price: data.price,
-                        username: data.username,
-                        status: data.status || "pending",
-                        assignedTo: data.assignedTo || null,
-                        timestamp: data.timestamp,
-                    });
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            const ridesData: Ride[] = [];
+            querySnapshot.forEach((docSnap) => {
+                const data = docSnap.data();
+                ridesData.push({
+                    id: docSnap.id,
+                    pickup: data.pickup,
+                    drop: data.drop,
+                    date: data.date,
+                    time: data.time,
+                    price: data.price,
+                    username: data.username,
+                    status: data.status || "pending",
+                    assignedTo: data.assignedTo || null,
+                    timestamp: data.timestamp,
                 });
-                setRides(ridesData);
-                setLoading(false);
-            },
-            (error) => {
-                console.error("Error fetching rides: ", error);
-                setLoading(false);
+            });
+            setRides(ridesData);
+            setLoading(false);
+        }, (error) => {
+            console.error("Error fetching rides: ", error);
+            setLoading(false);
+            Alert.alert("Error", "Failed to load rides. Please check your connection.");
+        });
 
-                Alert.alert("Error", "Failed to load rides. Please check your connection.");
-            }
-        );
+        return () => unsubscribe();
     }, []);
-
 
     const handleAcceptRide = async (rideId: string) => {
         try {
@@ -80,11 +74,9 @@ export default function RideList() {
             Alert.alert("Success", "Ride accepted!");
         } catch (error: any) {
             console.error("Failed to accept ride:", error);
-
             Alert.alert("Error", error.message || "Could not accept ride.");
         }
     };
-
 
     const renderItem = ({ item }: { item: Ride }) => (
         <RideCard
@@ -101,23 +93,32 @@ export default function RideList() {
         />
     );
 
-
     if (loading) {
         return (
-            <View style={styles.loaderContainer}>
-                <ActivityIndicator size="large" color="#007bff" />
+            <View style={[styles.loaderContainer, { backgroundColor: theme.colors.background }]}>
+                <ActivityIndicator size="large" color={theme.colors.primary} />
             </View>
         );
     }
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+            <Appbar.Header>
+                <Appbar.Content title="Available Rides" />
+            </Appbar.Header>
             <FlatList
                 data={rides}
                 keyExtractor={(item) => item.id}
                 renderItem={renderItem}
                 contentContainerStyle={styles.listContainer}
-                ListEmptyComponent={<Text style={styles.emptyListText}>No rides available yet.</Text>}
+                ListEmptyComponent={
+                    <View style={styles.emptyContainer}>
+                        <Text variant="headlineSmall">No rides available</Text>
+                        <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+                            Check back later for new ride postings.
+                        </Text>
+                    </View>
+                }
             />
         </View>
     );
@@ -126,21 +127,19 @@ export default function RideList() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#f4f4f4",
-        padding: 20,
     },
     listContainer: {
-        paddingBottom: 20,
+        padding: 16,
     },
     loaderContainer: {
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
     },
-    emptyListText: {
-        textAlign: 'center',
-        marginTop: 50,
-        fontSize: 16,
-        color: '#777',
-    }
+    emptyContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 100,
+    },
 });

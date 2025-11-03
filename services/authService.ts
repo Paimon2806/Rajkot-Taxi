@@ -52,7 +52,9 @@ export const signIn = async (email: string, password: string): Promise<User> => 
 // Sign Out Function
 export const logout = async (): Promise<void> => {
   try {
+    console.log("Attempting to log out...");
     await signOut(auth);
+    console.log("Logout successful.");
   } catch (error) {
     console.error("Sign Out Error:", error);
     throw error;

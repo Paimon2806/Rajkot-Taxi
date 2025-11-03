@@ -1,13 +1,12 @@
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import {
     View,
-    Text,
     StyleSheet,
-    Animated,
-    TouchableOpacity,
 } from "react-native";
+import { Card, Text, Button, useTheme } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import { getAuth } from "firebase/auth";
+import { MotiView } from 'moti';
 
 interface RideCardProps {
     pickup: string;
@@ -34,121 +33,119 @@ export default function RideCard({
                                      assignedTo,
                                      onAccept,
                                  }: RideCardProps) {
-    const opacity = useRef(new Animated.Value(0)).current;
-    const translateY = useRef(new Animated.Value(20)).current;
+    const theme = useTheme();
     const auth = getAuth();
     const user = auth.currentUser;
 
-    useEffect(() => {
-        Animated.parallel([
-            Animated.timing(opacity, {
-                toValue: 1,
-                duration: 400,
-                useNativeDriver: true,
-            }),
-            Animated.timing(translateY, {
-                toValue: 0,
-                duration: 400,
-                useNativeDriver: true,
-            }),
-        ]).start();
-    }, []);
+    const getStatusColor = (currentStatus: string) => {
+        switch (currentStatus) {
+            case 'pending': return theme.colors.primary;
+            case 'accepted': return theme.colors.accent;
+            case 'in_progress': return theme.colors.info; // Assuming an info color in theme
+            case 'completed': return theme.colors.onSurfaceVariant;
+            case 'cancelled': return theme.colors.error;
+            default: return theme.colors.onSurfaceVariant;
+        }
+    };
 
-    const renderStatus = () => {
+    const renderStatusAction = () => {
         if (!assignedTo) {
             return (
-                <TouchableOpacity
+                <Button
+                    mode="contained"
                     onPress={() => onAccept(rideId)}
                     style={styles.acceptButton}
+                    labelStyle={styles.acceptButtonLabel}
                 >
-                    <Text style={styles.buttonText}>Accept Ride</Text>
-                </TouchableOpacity>
+                    Accept Ride
+                </Button>
             );
         } else if (assignedTo === user?.uid) {
-            return <Text style={[styles.status, styles.assignedToYou]}>Assigned to You</Text>;
+            return (
+                <View style={[styles.statusBadge, { backgroundColor: theme.colors.accentContainer }]}>
+                    <Text style={{ color: theme.colors.onAccentContainer }}>Assigned to You</Text>
+                </View>
+            );
         } else {
-            return <Text style={[styles.status, styles.taken]}>Taken</Text>;
+            return (
+                <View style={[styles.statusBadge, { backgroundColor: theme.colors.errorContainer }]}>
+                    <Text style={{ color: theme.colors.onErrorContainer }}>Taken</Text>
+                </View>
+            );
         }
     };
 
     return (
-        <Animated.View style={[styles.card, { opacity, transform: [{ translateY }] }]}>
-            <View style={styles.header}>
-                <Ionicons name="car" size={22} color="#1976D2" style={styles.icon} />
-                <Text style={styles.username}>{username}</Text>
-            </View>
-            <Text style={styles.route}>{pickup} → {drop}</Text>
-            <Text style={styles.details}>Fare: ₹{price}</Text>
-            <Text style={styles.details}>Date: {date} at {time}</Text>
-            <View style={styles.statusWrapper}>{renderStatus()}</View>
-        </Animated.View>
+        <MotiView
+            from={{ opacity: 0, translateY: 20 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ type: 'timing', duration: 500 }}
+            style={styles.motiContainer}
+        >
+            <Card style={[styles.card, { backgroundColor: theme.colors.surface }]}>
+                <Card.Content>
+                    <View style={styles.header}>
+                        <Ionicons name="car" size={24} color={theme.colors.primary} style={styles.icon} />
+                        <Text variant="titleMedium" style={{ color: theme.colors.onSurface }}>{username}</Text>
+                    </View>
+                    <Text variant="headlineSmall" style={[styles.route, { color: theme.colors.onSurface }]}>
+                        {pickup} → {drop}
+                    </Text>
+                    <Text variant="bodyMedium" style={[styles.details, { color: theme.colors.onSurfaceVariant }]}>
+                        Fare: ₹{price}
+                    </Text>
+                    <Text variant="bodyMedium" style={[styles.details, { color: theme.colors.onSurfaceVariant }]}>
+                        Date: {date} at {time}
+                    </Text>
+                    <View style={styles.statusActionWrapper}>
+                        {renderStatusAction()}
+                    </View>
+                </Card.Content>
+            </Card>
+        </MotiView>
     );
 }
 
 const styles = StyleSheet.create({
+    motiContainer: {
+        marginBottom: 16,
+    },
     card: {
-        backgroundColor: "#E3F2FD",
-        borderRadius: 14,
-        padding: 18,
-        marginBottom: 14,
-        shadowColor: "#000",
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        shadowOffset: { width: 0, height: 2 },
-        elevation: 2,
+        borderRadius: 12,
+        elevation: 4,
     },
     header: {
         flexDirection: "row",
         alignItems: "center",
-        marginBottom: 8,
+        marginBottom: 12,
     },
     icon: {
-        marginRight: 6,
-    },
-    username: {
-        fontSize: 16,
-        fontWeight: "600",
-        color: "#1976D2",
+        marginRight: 8,
     },
     route: {
-        fontSize: 17,
-        fontWeight: "bold",
-        color: "#0D47A1",
-        marginBottom: 6,
+        marginBottom: 8,
+        fontWeight: 'bold',
     },
     details: {
-        fontSize: 14,
-        color: "#555",
+        marginBottom: 4,
     },
-    statusWrapper: {
-        marginTop: 12,
+    statusActionWrapper: {
+        marginTop: 16,
+        alignItems: 'flex-start',
     },
     acceptButton: {
-        backgroundColor: "#1976D2",
-        paddingVertical: 8,
-        borderRadius: 6,
-        alignItems: "center",
+        borderRadius: 8,
+        paddingHorizontal: 16,
+        paddingVertical: 4,
     },
-    buttonText: {
-        color: "#fff",
-        fontWeight: "600",
+    acceptButtonLabel: {
         fontSize: 14,
+        fontWeight: 'bold',
     },
-    status: {
+    statusBadge: {
         paddingVertical: 6,
         paddingHorizontal: 12,
-        borderRadius: 6,
-        fontWeight: "600",
-        textAlign: "center",
-        alignSelf: "flex-start",
-    },
-    assignedToYou: {
-        backgroundColor: "#C8E6C9",
-        color: "#2E7D32",
-    },
-    taken: {
-        backgroundColor: "#FFCDD2",
-        color: "#C62828",
+        borderRadius: 20,
+        alignSelf: 'flex-start',
     },
 });
-
