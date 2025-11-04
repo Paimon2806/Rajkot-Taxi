@@ -18,6 +18,9 @@ interface RideCardProps {
     rideId: string;
     status: string;
     assignedTo: string | null;
+    carType?: string;
+    tripType?: string;
+    description?: string;
     onAccept: (rideId: string) => void;
 }
 
@@ -31,6 +34,8 @@ export default function RideCard({
                                      rideId,
                                      status,
                                      assignedTo,
+                                     carType,
+                                     tripType,
                                      onAccept,
                                  }: RideCardProps) {
     const theme = useTheme();
@@ -97,20 +102,54 @@ export default function RideCard({
                     transition={{ type: 'timing', duration: 150 }}
                     style={{ flex: 1 }}
                 >
-                    <Card.Content>
+                    <Card.Content style={styles.cardContent}>
                         <View style={styles.header}>
-                            <Ionicons name="car" size={24} color={theme.colors.primary} style={styles.icon} />
+                            <Ionicons name="person-circle-outline" size={24} color={theme.colors.primary} style={styles.icon} />
                             <Text variant="titleMedium" style={{ color: theme.colors.onSurface }}>{username}</Text>
                         </View>
-                        <Text variant="headlineSmall" style={[styles.route, { color: theme.colors.onSurface }]}>
-                            {pickup} → {drop}
-                        </Text>
-                        <Text variant="bodyMedium" style={[styles.details, { color: theme.colors.onSurfaceVariant }]}>
-                            Fare: ₹{price}
-                        </Text>
-                        <Text variant="bodyMedium" style={[styles.details, { color: theme.colors.onSurfaceVariant }]}>
-                            Date: {date} at {time}
-                        </Text>
+
+                        <View style={styles.routeContainer}>
+                            <View style={styles.locationRow}>
+                                <Ionicons name="location-outline" size={18} color={theme.colors.onSurfaceVariant} />
+                                <Text variant="bodyLarge" style={styles.locationText}>{pickup}</Text>
+                            </View>
+                            <Ionicons name="arrow-down-outline" size={18} color={theme.colors.onSurfaceVariant} style={styles.arrowIcon} />
+                            <View style={styles.locationRow}>
+                                <Ionicons name="flag-outline" size={18} color={theme.colors.onSurfaceVariant} />
+                                <Text variant="bodyLarge" style={styles.locationText}>{drop}</Text>
+                            </View>
+                        </View>
+
+                        <View style={styles.detailsRow}>
+                            <View style={styles.detailItem}>
+                                <Ionicons name="calendar-outline" size={16} color={theme.colors.onSurfaceVariant} />
+                                <Text variant="bodyMedium" style={styles.detailText}>{date}</Text>
+                            </View>
+                            <View style={styles.detailItem}>
+                                <Ionicons name="time-outline" size={16} color={theme.colors.onSurfaceVariant} />
+                                <Text variant="bodyMedium" style={styles.detailText}>{time}</Text>
+                            </View>
+                            <View style={styles.detailItem}>
+                                <Ionicons name="wallet-outline" size={16} color={theme.colors.onSurfaceVariant} />
+                                <Text variant="bodyMedium" style={styles.detailText}>₹{price}</Text>
+                            </View>
+                        </View>
+
+                        <View style={styles.detailsRow}>
+                            {carType && (
+                                <View style={styles.detailItem}>
+                                    <Ionicons name="car-outline" size={16} color={theme.colors.onSurfaceVariant} />
+                                    <Text variant="bodyMedium" style={styles.detailText}>{carType}</Text>
+                                </View>
+                            )}
+                            {tripType && (
+                                <View style={styles.detailItem}>
+                                    <Ionicons name="repeat-outline" size={16} color={theme.colors.onSurfaceVariant} />
+                                    <Text variant="bodyMedium" style={styles.detailText}>{tripType}</Text>
+                                </View>
+                            )}
+                        </View>
+
                         <View style={styles.statusActionWrapper}>
                             {renderStatusAction()}
                         </View>
@@ -129,20 +168,51 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         elevation: 4,
     },
+    cardContent: {
+        paddingVertical: 16,
+        paddingHorizontal: 20,
+    },
     header: {
         flexDirection: "row",
         alignItems: "center",
-        marginBottom: 12,
+        marginBottom: 16,
     },
     icon: {
         marginRight: 8,
     },
-    route: {
-        marginBottom: 8,
-        fontWeight: 'bold',
+    routeContainer: {
+        marginBottom: 16,
     },
-    details: {
+    locationRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
         marginBottom: 4,
+    },
+    locationText: {
+        marginLeft: 8,
+        fontWeight: 'bold',
+        fontSize: 18,
+    },
+    arrowIcon: {
+        alignSelf: 'center',
+        marginVertical: 4,
+        marginLeft: 2,
+    },
+    detailsRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 12,
+        flexWrap: 'wrap',
+    },
+    detailItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginRight: 16,
+        marginBottom: 8,
+    },
+    detailText: {
+        marginLeft: 6,
+        fontSize: 15,
     },
     statusActionWrapper: {
         marginTop: 16,

@@ -32,11 +32,14 @@ import { MotiView } from 'moti';
 
 interface Ride {
   id: string;
-  pickup: string;
-  drop: string;
-  date?: string; // Make optional as it might not be directly used in all displays
-  time?: string; // Make optional
-  price?: number | string; // Can be number or string
+  from: string;
+  to: string;
+  date?: string;
+  time?: string;
+  price?: number | string;
+  carType?: string;
+  tripType?: string;
+  description?: string;
   uid: string;
   username: string;
   status: 'pending' | 'accepted' | 'in_progress' | 'completed' | 'cancelled';

@@ -16,6 +16,9 @@ interface Ride {
     timestamp: Timestamp;
     price?: number | string;
     username?: string;
+    carType?: string;
+    tripType?: string;
+    description?: string;
 }
 
 export default function MyPostedRidesScreen() {
@@ -44,7 +47,16 @@ export default function MyPostedRidesScreen() {
             const querySnapshot = await getDocs(ridesQuery);
             const rides = querySnapshot.docs.map(doc => ({
                 id: doc.id,
-                ...doc.data(),
+                pickup: doc.data().pickup,
+                drop: doc.data().drop,
+                status: doc.data().status || "pending",
+                assignedName: doc.data().assignedName || null,
+                timestamp: doc.data().timestamp,
+                price: doc.data().price || null,
+                username: doc.data().username || null,
+                carType: doc.data().carType || null,
+                tripType: doc.data().tripType || null,
+                description: doc.data().description || null,
             } as Ride));
             setMyPostedRides(rides);
         } catch (error) {
@@ -98,6 +110,12 @@ export default function MyPostedRidesScreen() {
                             {item.status}
                         </Chip>
                     </View>
+                    {item.carType && <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+                        Car Type: {item.carType}
+                    </Text>}
+                    {item.tripType && <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+                        Trip Type: {item.tripType}
+                    </Text>}
                     <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
                         {item.assignedName ? `Driver: ${item.assignedName}` : 'No driver assigned'}
                     </Text>

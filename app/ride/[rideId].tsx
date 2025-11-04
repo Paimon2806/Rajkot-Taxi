@@ -14,6 +14,9 @@ interface Ride {
     status: 'pending' | 'accepted' | 'in_progress' | 'completed' | 'cancelled';
     assignedTo: string | null; // This will hold the driver's UID
     assignedName: string | null;
+    carType?: string;
+    tripType?: string;
+    description?: string;
 }
 
 export default function RideTrackingScreen() {
@@ -33,7 +36,19 @@ export default function RideTrackingScreen() {
         const unsubscribe = onSnapshot(rideDocRef, (docSnap) => {
             if (docSnap.exists()) {
                 // When the document updates, update our state
-                setRide({ id: docSnap.id, ...docSnap.data() } as Ride);
+                const data = docSnap.data();
+                setRide({
+                    id: docSnap.id,
+                    pickup: data.pickup,
+                    drop: data.drop,
+                    price: data.price,
+                    status: data.status || "pending",
+                    assignedTo: data.assignedTo || null,
+                    assignedName: data.assignedName || null,
+                    carType: data.carType || null,
+                    tripType: data.tripType || null,
+                    description: data.description || null,
+                } as Ride);
             } else {
                 console.error("No such ride document!");
                 // Optionally, navigate the user away or show an error
@@ -59,6 +74,10 @@ export default function RideTrackingScreen() {
                 <Text style={styles.title}>Tracking Your Ride</Text>
                 <Text style={styles.detailText}>From: {ride.pickup}</Text>
                 <Text style={styles.detailText}>To: {ride.drop}</Text>
+                {ride.carType && <Text style={styles.detailText}>Car Type: {ride.carType}</Text>}
+                {ride.tripType && <Text style={styles.detailText}>Trip Type: {ride.tripType}</Text>}
+                <Text style={styles.detailText}>Price: ₹{ride.price}</Text>
+                {ride.description && <Text style={styles.detailText}>Description: {ride.description}</Text>}
                 <Text style={styles.statusText}>
                     Status: <Text style={styles.statusValue}>{ride.status.replace('_', ' ')}</Text>
                 </Text>

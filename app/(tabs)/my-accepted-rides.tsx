@@ -27,6 +27,9 @@ interface Ride {
     username: string;
     status: string;
     assignedTo: string | null;
+    carType?: string;
+    tripType?: string;
+    description?: string;
     timestamp: any;
 }
 
@@ -65,6 +68,9 @@ export default function MyAcceptedRidesScreen() {
                     username: data.username,
                     status: data.status || "pending",
                     assignedTo: data.assignedTo || null,
+                    carType: data.carType || null,
+                    tripType: data.tripType || null,
+                    description: data.description || null,
                     timestamp: data.timestamp,
                 });
             });
@@ -94,6 +100,9 @@ export default function MyAcceptedRidesScreen() {
             username={item.username}
             status={item.status}
             assignedTo={item.assignedTo}
+            carType={item.carType}
+            tripType={item.tripType}
+            description={item.description}
             onAccept={() => handleActionOnAcceptedRide(item.id)}
         />
     );
