@@ -39,6 +39,10 @@ export const lightTheme = {
     onSurface: '#1C1B1F',
     primaryContainer: '#EADDFF',
     onPrimaryContainer: '#21005D',
+    success: '#4CAF50', // Green for success
+    onSuccess: '#FFFFFF',
+    successContainer: '#B9F6CA',
+    onSuccessContainer: '#1B5E20',
   },
   shadows: {
     // Define custom shadows if needed, or rely on Paper's elevation
@@ -63,6 +67,10 @@ export const darkTheme = {
     onSurface: '#E6E1E5',
     primaryContainer: '#4A4458',
     onPrimaryContainer: '#EADDFF',
+    success: '#66BB6A', // Lighter green for dark mode success
+    onSuccess: '#FFFFFF',
+    successContainer: '#388E3C',
+    onSuccessContainer: '#FFFFFF',
   },
   shadows: {
     small: '0px 1px 3px rgba(0, 0, 0, 0.2)',

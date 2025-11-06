@@ -48,10 +48,84 @@ export const acceptRideRequest = async (rideId: string): Promise<void> => {
         throw new Error('Only drivers can accept rides.');
     }
 
-    // Update the ride document
-    await updateDoc(rideDocRef, {
-        assignedTo: user.uid,
-        assignedName: userName,
-        status: 'accepted',
-    });
-};
+        // Update the ride document
+
+        await updateDoc(rideDocRef, {
+
+            assignedTo: user.uid,
+
+            assignedName: userName,
+
+            status: 'accepted',
+
+        });
+
+    };
+
+    
+
+    /**
+
+     * Marks a ride as completed
+
+     * @param rideId The ID of the ride to complete
+
+     * @returns Promise that resolves when the ride is successfully marked as completed
+
+     */
+
+    export const completeRide = async (rideId: string): Promise<void> => {
+
+        const auth = getAuth();
+
+        const user = auth.currentUser;
+
+    
+
+        if (!user) {
+
+            throw new Error('You must be logged in to complete a ride.');
+
+        }
+
+    
+
+        const rideDocRef = doc(db, 'rides', rideId);
+
+        const rideDocSnap = await getDoc(rideDocRef);
+
+    
+
+        if (!rideDocSnap.exists()) {
+
+            throw new Error('Ride not found.');
+
+        }
+
+    
+
+        const rideData = rideDocSnap.data();
+
+    
+
+        // Ensure the user completing the ride is the one it was assigned to
+
+        if (rideData.assignedTo !== user.uid) {
+
+            throw new Error('You are not authorized to complete this ride.');
+
+        }
+
+    
+
+        // Update the ride document's status to 'completed'
+
+        await updateDoc(rideDocRef, {
+
+            status: 'completed',
+
+        });
+
+    };
+
+    

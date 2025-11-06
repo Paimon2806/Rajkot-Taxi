@@ -4,6 +4,7 @@ import {
     FlatList,
     StyleSheet,
     Alert,
+    RefreshControl,
 } from "react-native";
 import {
     collection,
@@ -15,10 +16,14 @@ import {
 import { getAuth } from "firebase/auth";
 import { db } from "../../config/firebaseConfig";
 import RideCard from "../../components/RideCard";
-import { Appbar, Text, useTheme, ActivityIndicator } from "react-native-paper";
+import { Appbar, Text, useTheme, ActivityIndicator, Button } from "react-native-paper";
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { completeRide } from "../../services/RideActionsService";
 
 interface Ride {
     id: string;
+    uid: string;
     pickup: string;
     drop: string;
     date: string;
@@ -36,21 +41,25 @@ interface Ride {
 export default function MyAcceptedRidesScreen() {
     const [rides, setRides] = useState<Ride[]>([]);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
     const theme = useTheme();
     const auth = getAuth();
     const currentUser = auth.currentUser;
+    const router = useRouter();
 
-    useEffect(() => {
+    const fetchAcceptedRides = () => {
         if (!currentUser) {
             setLoading(false);
             setRides([]);
+            setRefreshing(false);
             return;
         }
 
+        setLoading(true);
         const q = query(
             collection(db, "rides"),
             where("assignedTo", "==", currentUser.uid),
-            where("status", "==", "accepted"),
+            where("status", "in", ["accepted", "completed"]),
             orderBy("timestamp", "desc")
         );
 
@@ -60,6 +69,7 @@ export default function MyAcceptedRidesScreen() {
                 const data = docSnap.data();
                 ridesData.push({
                     id: docSnap.id,
+                    uid: data.uid,
                     pickup: data.pickup,
                     drop: data.drop,
                     date: data.date,
@@ -76,22 +86,40 @@ export default function MyAcceptedRidesScreen() {
             });
             setRides(ridesData);
             setLoading(false);
+            setRefreshing(false); // Ensure refreshing is set to false after data fetch
         }, (error) => {
             console.error("Error fetching my accepted rides: ", error);
             setLoading(false);
+            setRefreshing(false); // Ensure refreshing is set to false on error
             Alert.alert("Error", "Failed to load your accepted rides. Please try again.");
         });
 
         return () => unsubscribe();
+    };
+
+    useEffect(() => {
+        fetchAcceptedRides();
     }, [currentUser]);
 
-    const handleActionOnAcceptedRide = (rideId: string) => {
-        Alert.alert("Ride Action", `This is where you would add actions for an accepted ride, like starting or completing it. Ride ID: ${rideId}`);
+    const onRefresh = () => {
+        setRefreshing(true);
+        fetchAcceptedRides(); // Re-fetch data
+    };
+
+    const handleCompleteRide = async (rideId: string) => {
+        try {
+            await completeRide(rideId);
+            Alert.alert("Success", "Ride marked as completed!");
+        } catch (error: any) {
+            console.error("Failed to complete ride:", error);
+            Alert.alert("Error", error.message || "Could not complete ride.");
+        }
     };
 
     const renderItem = ({ item }: { item: Ride }) => (
         <RideCard
             rideId={item.id}
+            uid={item.uid}
             pickup={item.pickup}
             drop={item.drop}
             price={item.price}
@@ -103,7 +131,8 @@ export default function MyAcceptedRidesScreen() {
             carType={item.carType}
             tripType={item.tripType}
             description={item.description}
-            onAccept={() => handleActionOnAcceptedRide(item.id)}
+            onAccept={() => {}} // Not used on this screen
+            onComplete={handleCompleteRide}
         />
     );
 
@@ -125,12 +154,23 @@ export default function MyAcceptedRidesScreen() {
                 keyExtractor={(item) => item.id}
                 renderItem={renderItem}
                 contentContainerStyle={styles.listContainer}
+                refreshControl={ // Step 2.3
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                }
                 ListEmptyComponent={
                     <View style={styles.emptyContainer}>
-                        <Text variant="headlineSmall">No accepted rides</Text>
-                        <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+                        <Ionicons name="checkmark-circle-outline" size={60} color={theme.colors.onSurfaceVariant} />
+                        <Text variant="headlineSmall" style={{ color: theme.colors.onSurface, textAlign: 'center' }}>No accepted rides yet</Text>
+                        <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant, textAlign: 'center', marginTop: 8 }}>
                             When you accept a ride, it will appear here.
                         </Text>
+                        <Button
+                            mode="contained"
+                            onPress={() => router.push('ridelist')}
+                            style={{ marginTop: 16 }}
+                        >
+                            Browse Available Rides
+                        </Button>
                     </View>
                 }
             />

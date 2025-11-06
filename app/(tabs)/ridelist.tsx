@@ -4,6 +4,7 @@ import {
     FlatList,
     StyleSheet,
     Alert,
+    RefreshControl,
 } from "react-native";
 import {
     collection,
@@ -15,9 +16,11 @@ import { db } from "../../config/firebaseConfig";
 import RideCard from "../../components/RideCard";
 import { acceptRideRequest } from "../../services/RideActionsService";
 import { Appbar, Text, useTheme, ActivityIndicator } from "react-native-paper";
+import { Ionicons } from '@expo/vector-icons';
 
 interface Ride {
     id: string;
+    uid: string;
     pickup: string;
     drop: string;
     date: string;
@@ -35,9 +38,11 @@ interface Ride {
 export default function RideList() {
     const [rides, setRides] = useState<Ride[]>([]);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
     const theme = useTheme();
 
-    useEffect(() => {
+    const fetchRides = () => {
+        setLoading(true);
         const q = query(
             collection(db, "rides"),
             orderBy("timestamp", "desc")
@@ -49,6 +54,7 @@ export default function RideList() {
                 const data = docSnap.data();
                 ridesData.push({
                     id: docSnap.id,
+                    uid: data.uid,
                     pickup: data.pickup,
                     drop: data.drop,
                     date: data.date,
@@ -65,14 +71,25 @@ export default function RideList() {
             });
             setRides(ridesData);
             setLoading(false);
+            setRefreshing(false); // Ensure refreshing is set to false after data fetch
         }, (error) => {
             console.error("Error fetching rides: ", error);
             setLoading(false);
+            setRefreshing(false); // Ensure refreshing is set to false on error
             Alert.alert("Error", "Failed to load rides. Please check your connection.");
         });
 
         return () => unsubscribe();
+    };
+
+    useEffect(() => {
+        fetchRides();
     }, []);
+
+    const onRefresh = () => {
+        setRefreshing(true);
+        fetchRides(); // Re-fetch data
+    };
 
     const handleAcceptRide = async (rideId: string) => {
         try {
@@ -87,6 +104,7 @@ export default function RideList() {
     const renderItem = ({ item }: { item: Ride }) => (
         <RideCard
             rideId={item.id}
+            uid={item.uid}
             pickup={item.pickup}
             drop={item.drop}
             price={item.price}
@@ -114,17 +132,22 @@ export default function RideList() {
         <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
             <Appbar.Header>
                 <Appbar.Content title="Available Rides" />
+                <Appbar.Action icon="refresh" onPress={onRefresh} />
             </Appbar.Header>
             <FlatList
                 data={rides}
                 keyExtractor={(item) => item.id}
                 renderItem={renderItem}
                 contentContainerStyle={styles.listContainer}
+                refreshControl={ // Step 1.3
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                }
                 ListEmptyComponent={
                     <View style={styles.emptyContainer}>
-                        <Text variant="headlineSmall">No rides available</Text>
-                        <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
-                            Check back later for new ride postings.
+                        <Ionicons name="search-outline" size={60} color={theme.colors.onSurfaceVariant} />
+                        <Text variant="headlineSmall" style={{ color: theme.colors.onSurface }}>No rides available</Text>
+                        <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant, textAlign: 'center', marginTop: 8 }}>
+                            Check back later for new ride postings or post one yourself!
                         </Text>
                     </View>
                 }

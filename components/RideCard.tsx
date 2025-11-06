@@ -16,12 +16,14 @@ interface RideCardProps {
     time: string;
     username: string;
     rideId: string;
+    uid: string; // Add uid of the ride poster
     status: string;
     assignedTo: string | null;
     carType?: string;
     tripType?: string;
     description?: string;
-    onAccept: (rideId: string) => void;
+    onAccept?: (rideId: string) => void; // Make optional
+    onComplete?: (rideId: string) => void;
 }
 
 export default function RideCard({
@@ -32,11 +34,13 @@ export default function RideCard({
                                      time,
                                      username,
                                      rideId,
+                                     uid, // Destructure uid
                                      status,
                                      assignedTo,
                                      carType,
                                      tripType,
                                      onAccept,
+                                     onComplete,
                                  }: RideCardProps) {
     const theme = useTheme();
     const auth = getAuth();
@@ -54,7 +58,8 @@ export default function RideCard({
     };
 
     const renderStatusAction = () => {
-        if (!assignedTo) {
+        // Condition for showing Accept Ride button
+        if (!assignedTo && uid !== user?.uid && onAccept) {
             return (
                 <MotiView
                     from={{ scale: 1, opacity: 1 }}
@@ -72,19 +77,52 @@ export default function RideCard({
                     </Button>
                 </MotiView>
             );
-        } else if (assignedTo === user?.uid) {
+        } 
+        // Condition for the assigned driver
+        else if (assignedTo === user?.uid) {
+            if (status === 'completed') {
+                return (
+                    <View style={[styles.statusBadge, { backgroundColor: theme.colors.successContainer }]}>
+                        <Text style={{ color: theme.colors.onSuccessContainer }}>Completed</Text>
+                    </View>
+                );
+            }
+            if (onComplete) {
+                return (
+                    <MotiView
+                        from={{ scale: 1, opacity: 1 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        whileTap={{ scale: 0.95, opacity: 0.8 }}
+                        transition={{ type: 'timing', duration: 150 }}
+                    >
+                        <Button
+                            mode="contained"
+                            onPress={() => onComplete(rideId)}
+                            style={[styles.acceptButton, { backgroundColor: theme.colors.success }]} // Assuming a success color in theme
+                            labelStyle={styles.acceptButtonLabel}
+                        >
+                            Mark as Completed
+                        </Button>
+                    </MotiView>
+                );
+            }
+            // Fallback for assigned driver if onComplete is not provided
             return (
                 <View style={[styles.statusBadge, { backgroundColor: theme.colors.accentContainer }]}>
                     <Text style={{ color: theme.colors.onAccentContainer }}>Assigned to You</Text>
                 </View>
             );
-        } else {
+        } 
+        // Condition for a ride taken by another driver
+        else if (assignedTo) {
             return (
                 <View style={[styles.statusBadge, { backgroundColor: theme.colors.errorContainer }]}>
                     <Text style={{ color: theme.colors.onErrorContainer }}>Taken</Text>
                 </View>
             );
         }
+        // If none of the above, render nothing (e.g., for the poster viewing their own unassigned ride)
+        return null;
     };
 
     return (

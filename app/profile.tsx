@@ -44,7 +44,7 @@ export default function ProfileScreen() {
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
             <Appbar.Header>
-                <Appbar.BackAction onPress={() => router.back()} />
+                <Appbar.BackAction onPress={() => router.push('/home')} />
                 <Appbar.Content title="Profile" />
             </Appbar.Header>
             <ScrollView contentContainerStyle={styles.container}>

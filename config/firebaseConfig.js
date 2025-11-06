@@ -1,15 +1,15 @@
 import { initializeApp, getApps } from "firebase/app";
-import { getAuth } from "firebase/auth"; // Remove `initializeAuth`
+import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 // Your Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyALGbJOCJfXraw2LKWVr1Ydcdz7holehSg",
-  authDomain: "taxi-2806.firebaseapp.com",
-  projectId: "taxi-2806",
-  storageBucket: "taxi-2806.firebasestorage.app",
-  messagingSenderId: "758899481689",
-  appId: "1:758899481689:web:48ee6c9102ebeb25d56548"
+  apiKey: process.env.EXPO_PUBLIC_API_KEY,
+  authDomain: process.env.EXPO_PUBLIC_AUTH_DOMAIN,
+  projectId: process.env.EXPO_PUBLIC_PROJECT_ID,
+  storageBucket: process.env.EXPO_PUBLIC_STORAGE_BUCKET,
+  messagingSenderId: process.env.EXPO_PUBLIC_MESSAGING_SENDER_ID,
+  appId: process.env.EXPO_PUBLIC_APP_ID
 };
 
 // Ensure Firebase is initialized only once
@@ -20,4 +20,3 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 export { app, auth, db };
-

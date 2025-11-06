@@ -40,3 +40,6 @@ app-example
 
 android
 .env
+
+.gemini/
+gha-creds-*.json
